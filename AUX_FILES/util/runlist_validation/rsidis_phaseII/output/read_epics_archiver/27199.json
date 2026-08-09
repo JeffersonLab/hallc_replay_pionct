@@ -1,0 +1,253 @@
+{
+    "RunNumber": "27199",
+    "ecDI_B_Set_NMR": {
+        "average": 0.318941,
+        "current size": 3832,
+        "first": 0.318941,
+        "maximum": 0.318941,
+        "minimum": 0.318941,
+        "most_common": 0.318941,
+        "num_of_undefined": 0,
+        "standard_deviation": 5.551115123125783e-17
+    },
+    "ecDI_B_True_NMR": {
+        "average": 0.318928,
+        "current size": 3832,
+        "first": 0.318928,
+        "maximum": 0.318929,
+        "minimum": 0.318927,
+        "most_common": 0.318928,
+        "num_of_undefined": 0,
+        "standard_deviation": 4.608781147338e-07
+    },
+    "ecDI_I_coarse": {
+        "average": 352.879,
+        "current size": 3832,
+        "first": 353.019,
+        "maximum": 353.066,
+        "minimum": 352.692,
+        "most_common": 353.019,
+        "num_of_undefined": 0,
+        "standard_deviation": 0.053233689272167345
+    },
+    "ecDI_Set_Current": {
+        "average": 355.6,
+        "current size": 3832,
+        "first": 355.6,
+        "maximum": 355.6,
+        "minimum": 355.6,
+        "most_common": 355.6,
+        "num_of_undefined": 0,
+        "standard_deviation": 0.0
+    },
+    "ecQ1_I_coarse": {
+        "average": 152.42649999999998,
+        "current size": 3832,
+        "first": 152.436,
+        "maximum": 152.534,
+        "minimum": 152.319,
+        "most_common": 152.514,
+        "num_of_undefined": 0,
+        "standard_deviation": 0.06417755031896283
+    },
+    "ecQ1_Set_Current": {
+        "average": 151.684,
+        "current size": 3832,
+        "first": 151.684,
+        "maximum": 151.684,
+        "minimum": 151.684,
+        "most_common": 151.684,
+        "num_of_undefined": 0,
+        "standard_deviation": 0.0
+    },
+    "ecQ2_I_coarse": {
+        "average": 120.3635,
+        "current size": 3832,
+        "first": 120.354,
+        "maximum": 120.373,
+        "minimum": 120.354,
+        "most_common": 120.354,
+        "num_of_undefined": 0,
+        "standard_deviation": 0.002765826076897951
+    },
+    "ecQ2_Set_Current": {
+        "average": 120.496,
+        "current size": 3832,
+        "first": 120.496,
+        "maximum": 120.496,
+        "minimum": 120.496,
+        "most_common": 120.496,
+        "num_of_undefined": 0,
+        "standard_deviation": 4.263256414560601e-14
+    },
+    "ecQ3_I_coarse": {
+        "average": 58.078900000000004,
+        "current size": 3832,
+        "first": 58.0691,
+        "maximum": 58.0887,
+        "minimum": 58.0691,
+        "most_common": 58.0691,
+        "num_of_undefined": 0,
+        "standard_deviation": 0.009295206009673063
+    },
+    "ecQ3_Set_Current": {
+        "average": 58.502,
+        "current size": 3832,
+        "first": 58.502,
+        "maximum": 58.502,
+        "minimum": 58.502,
+        "most_common": 58.502,
+        "num_of_undefined": 0,
+        "standard_deviation": 2.1316282072803006e-14
+    },
+    "ecSDI_I_coarse": {
+        "average": 1644.28,
+        "current size": 3832,
+        "first": 1644.28,
+        "maximum": 1644.28,
+        "minimum": 1644.28,
+        "most_common": 1644.28,
+        "num_of_undefined": 0,
+        "standard_deviation": 2.2737367544323206e-13
+    },
+    "ecSDI_Set_Current": {
+        "average": 1644.44,
+        "current size": 3832,
+        "first": 1644.44,
+        "maximum": 1644.44,
+        "minimum": 1644.44,
+        "most_common": 1644.44,
+        "num_of_undefined": 0,
+        "standard_deviation": 4.547473508864641e-13
+    },
+    "ecSHB_I_coarse": {
+        "average": 1720.0900000000001,
+        "current size": 3832,
+        "first": 1720.17,
+        "maximum": 1720.17,
+        "minimum": 1720.01,
+        "most_common": 1720.17,
+        "num_of_undefined": 0,
+        "standard_deviation": 0.06961625091757029
+    },
+    "ecSHB_Set_Current": {
+        "average": 1722.67,
+        "current size": 3832,
+        "first": 1722.67,
+        "maximum": 1722.67,
+        "minimum": 1722.67,
+        "most_common": 1722.67,
+        "num_of_undefined": 0,
+        "standard_deviation": 2.2737367544323206e-13
+    },
+    "ecSQ1_I_coarse": {
+        "average": 1082.4450000000002,
+        "current size": 3832,
+        "first": 1082.44,
+        "maximum": 1082.51,
+        "minimum": 1082.38,
+        "most_common": 1082.44,
+        "num_of_undefined": 0,
+        "standard_deviation": 0.02568371753345652
+    },
+    "ecSQ1_Set_Current": {
+        "average": 1082.18,
+        "current size": 3832,
+        "first": 1082.18,
+        "maximum": 1082.18,
+        "minimum": 1082.18,
+        "most_common": 1082.18,
+        "num_of_undefined": 0,
+        "standard_deviation": 2.2737367544323206e-13
+    },
+    "ecSQ2_I_coarse": {
+        "average": 1815.675,
+        "current size": 3832,
+        "first": 1815.67,
+        "maximum": 1815.74,
+        "minimum": 1815.61,
+        "most_common": 1815.67,
+        "num_of_undefined": 0,
+        "standard_deviation": 0.007859293470861062
+    },
+    "ecSQ2_Set_Current": {
+        "average": 1817.72,
+        "current size": 3832,
+        "first": 1817.72,
+        "maximum": 1817.72,
+        "minimum": 1817.72,
+        "most_common": 1817.72,
+        "num_of_undefined": 0,
+        "standard_deviation": 2.2737367544323206e-13
+    },
+    "ecSQ3_I_coarse": {
+        "average": 1197.01,
+        "current size": 3832,
+        "first": 1196.98,
+        "maximum": 1197.04,
+        "minimum": 1196.98,
+        "most_common": 1196.98,
+        "num_of_undefined": 0,
+        "standard_deviation": 0.024318113770999034
+    },
+    "ecSQ3_Set_Current": {
+        "average": 1196.04,
+        "current size": 3832,
+        "first": 1196.04,
+        "maximum": 1196.04,
+        "minimum": 1196.04,
+        "most_common": 1196.04,
+        "num_of_undefined": 0,
+        "standard_deviation": 4.547473508864641e-13
+    },
+    "ecHMS_Angle": {
+        "average": 44.82,
+        "current size": 3832,
+        "first": 44.82,
+        "maximum": 44.82,
+        "minimum": 44.82,
+        "most_common": 44.82,
+        "num_of_undefined": 0,
+        "standard_deviation": 1.4210854715202004e-14
+    },
+    "ecSHMS_Angle": {
+        "average": 10.24,
+        "current size": 3832,
+        "first": 10.24,
+        "maximum": 10.24,
+        "minimum": 10.24,
+        "most_common": 10.24,
+        "num_of_undefined": 0,
+        "standard_deviation": 1.7763568394002505e-15
+    },
+    "hcBDSPOS": {
+        "average": 23921500.0,
+        "current size": 3832,
+        "first": 23921500.0,
+        "maximum": 23921500.0,
+        "minimum": 23921500.0,
+        "most_common": 23921500.0,
+        "num_of_undefined": 0,
+        "standard_deviation": 0.0
+    },
+    "hcL1_Fan_Freq_R": {
+        "average": 52.0,
+        "current size": 3832,
+        "first": 53.5,
+        "maximum": 57.0,
+        "minimum": 47.0,
+        "most_common": 54.5,
+        "num_of_undefined": 0,
+        "standard_deviation": 0.9661036811318198
+    },
+    "hcL2_Fan_Freq_R": {
+        "average": 59.25,
+        "current size": 3832,
+        "first": 60.0,
+        "maximum": 66.5,
+        "minimum": 52.0,
+        "most_common": 60.0,
+        "num_of_undefined": 0,
+        "standard_deviation": 1.8336928460213997
+    }
+}

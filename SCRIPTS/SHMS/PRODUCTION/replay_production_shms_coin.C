@@ -1,4 +1,7 @@
-void replay_production_shms_coin (Int_t RunNumber = 0, Int_t MaxEvent = 0, Int_t FirstEvent = 1) {
+#include "MultiFileRun.h"
+
+void replay_production_shms_coin (Int_t RunNumber = 0, Int_t MaxEvent = 0,
+				      Int_t FirstEvent = 1, Int_t MaxSegment = -1) {
 
   // Get RunNumber and MaxEvent if not provided.
   if(RunNumber == 0) {
@@ -18,8 +21,8 @@ void replay_production_shms_coin (Int_t RunNumber = 0, Int_t MaxEvent = 0, Int_t
   // Create file name patterns.
   // const char* RunFileNamePattern = "shms_all_%05d.dat";
   // const char* RunFileNamePattern = "lad_Production_%05d.dat.0";
-  const char* RunFileNamePattern = "rsidis_production_%05d.dat.0";      
-  vector<TString> pathList;
+  const char* RunFileNamePattern = "rsidis_production_%05d.dat.%u";      
+  vector<string> pathList;
   pathList.push_back(".");
   pathList.push_back("./raw");
   pathList.push_back("./raw/../raw.copiedtotape");
@@ -36,13 +39,15 @@ void replay_production_shms_coin (Int_t RunNumber = 0, Int_t MaxEvent = 0, Int_t
   gHcParms->Load(gHcParms->GetString("g_ctp_pcal_calib_filename"));
   gHcParms->Load(gHcParms->GetString("g_ctp_hcal_calib_filename"));
   // Load parameters for SHMS trigger configuration
-  gHcParms->Load("PARAM/TRIG/tshms.param");
+  //gHcParms->Load("PARAM/TRIG/tshms.param");
+  gHcParms->Load(gHcParms->GetString("g_ctp_ptrigdet_filename"));
   // Load fadc debug parameters
   gHcParms->Load("PARAM/SHMS/GEN/p_fadc_debug.param");
 
   // Load the Hall C detector map
   gHcDetectorMap = new THcDetectorMap();
-  gHcDetectorMap->Load("MAPS/SHMS/DETEC/STACK/shms_stack.map");
+  //gHcDetectorMap->Load("MAPS/SHMS/DETEC/STACK/shms_stack.map");
+  gHcDetectorMap->Load(gHcParms->GetString("g_ctp_pmap_filename"));
   
   // Set up the equipment to be analyzed.
   THcHallCSpectrometer* SHMS = new THcHallCSpectrometer("P", "SHMS");
@@ -144,9 +149,47 @@ void replay_production_shms_coin (Int_t RunNumber = 0, Int_t MaxEvent = 0, Int_t
   // defining and controlling the output.
   THaEvent* event = new THaEvent;
 
-  // Define the run(s) that we want to analyze.
-  // We just set up one, but this could be many.
-  THcRun* run = new THcRun( pathList, Form(RunFileNamePattern, RunNumber) );
+  // Define the run(s) that we want to analyze. Segment 0 is mandatory because
+  // it initializes global counters needed by later segments. By default,
+  // discover all contiguous segments; a nonnegative MaxSegment overrides this.
+  vector<string> fileNames = {};
+  Int_t iseg = 0;
+  while(MaxSegment < 0 || iseg <= MaxSegment) {
+    TString codafilename;
+    codafilename.Form(RunFileNamePattern, RunNumber, iseg);
+
+    Bool_t foundSegment = kFALSE;
+    for(UInt_t ipath = 0; ipath < pathList.size(); ipath++) {
+      TString fullPath = TString(pathList[ipath]) + "/" + codafilename;
+      if(!gSystem->AccessPathName(fullPath)) {
+	foundSegment = kTRUE;
+	break;
+      }
+    }
+
+    if(!foundSegment) {
+      if(iseg == 0) {
+	cerr << "ERROR: Required segment 0 file " << codafilename
+	     << " was not found in the replay path list. "
+	     << "Segment 0 is required to initialize global counters." << endl;
+	cerr << "Searched paths:" << endl;
+	for(UInt_t ipath = 0; ipath < pathList.size(); ipath++) {
+	  cerr << "  " << pathList[ipath] << endl;
+	}
+	return;
+      }
+
+      cout << "Segment " << iseg << " file " << codafilename
+	   << " not found. Finished building input file list." << endl;
+      break;
+    }
+
+    cout << "codafilename = " << codafilename << endl;
+    fileNames.emplace_back(codafilename.Data());
+    iseg++;
+  }
+
+  auto* run = new Podd::MultiFileRun( pathList, fileNames );
 
   // Set to read in Hall C run database parameters
   run->SetRunParamClass("THcRunParameters");
@@ -171,7 +214,8 @@ void replay_production_shms_coin (Int_t RunNumber = 0, Int_t MaxEvent = 0, Int_t
   // Define output ROOT file
   analyzer->SetOutFile(ROOTFileName.Data());
   // Define DEF-file
-  analyzer->SetOdefFile("DEF-files/SHMS/PRODUCTION/pstackana_production_all.def");
+  // analyzer->SetOdefFile("DEF-files/SHMS/PRODUCTION/pstackana_production_all.def");
+  analyzer->SetOdefFile("DEF-files/SHMS/PRODUCTION/pstackana_production_light.def");
   // Define cuts file
   analyzer->SetCutFile("DEF-files/SHMS/PRODUCTION/CUTS/pstackana_production_cuts.def");  // optional
   // File to record accounting information for cuts

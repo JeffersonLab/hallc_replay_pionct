@@ -1,4 +1,7 @@
-void replay_production_coin_hElec_pProt (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
+#include "MultiFileRun.h"
+
+void replay_production_coin_hElec_pProt (Int_t RunNumber = 0, Int_t MaxEvent = 0,
+					 Int_t FirstEvent = 1, Int_t MaxSegment = -1) {
 
   // Get RunNumber and MaxEvent if not provided.
   if(RunNumber == 0) {
@@ -18,8 +21,8 @@ void replay_production_coin_hElec_pProt (Int_t RunNumber = 0, Int_t MaxEvent = 0
   // Create file name patterns.
   //  const char* RunFileNamePattern = "coin_all_%05d.dat";
   //  const char* RunFileNamePattern = "lad_Production_%05d.dat.0";
-  const char* RunFileNamePattern = "rsidis_production_%05d.dat.0";  
-  vector<TString> pathList;
+  const char* RunFileNamePattern = "pionct_production_%05d.dat.%u";  
+  vector<string> pathList;
   pathList.push_back(".");
   pathList.push_back("./raw");
   pathList.push_back("./raw/../raw.copiedtotape");
@@ -37,7 +40,9 @@ void replay_production_coin_hElec_pProt (Int_t RunNumber = 0, Int_t MaxEvent = 0
   gHcParms->Load(gHcParms->GetString("g_ctp_pcal_calib_filename"));
   gHcParms->Load(gHcParms->GetString("g_ctp_hcal_calib_filename"));
   // Load params for COIN trigger configuration
-  gHcParms->Load("PARAM/TRIG/tcoin.param");
+  //gHcParms->Load("PARAM/TRIG/tcoin.param");
+  //gHcParms->Load("PARAM/TRIG/tcoin_phaseII.param");
+  gHcParms->Load(gHcParms->GetString("g_ctp_trigdet_filename"));
   // Load fadc debug parameters
   gHcParms->Load("PARAM/HMS/GEN/h_fadc_debug.param");
   gHcParms->Load("PARAM/SHMS/GEN/p_fadc_debug.param");
@@ -45,11 +50,35 @@ void replay_production_coin_hElec_pProt (Int_t RunNumber = 0, Int_t MaxEvent = 0
   // const char* CurrentFileNamePattern = "low_curr_bcm/bcmcurrent_%d.param";
   // gHcParms->Load(Form(CurrentFileNamePattern, RunNumber));
 
+  // ********  Start-up with no timing windows  *****************
+  // Overwrite the existing reference times with
+  // the default values specified in hallc_replay.  
+  // gHcParms->AddString("g_ctp_no_reference_times_filename", "PARAM/SHMS/GEN/p_no_reference_times.param");
+  // gHcParms->Load(gHcParms->GetString("g_ctp_no_reference_times_filename"));
+
+  // Now remove all Timing Windows and revert to 
+  // the default values specifid in hallc_replay
+  //  gHcParms->AddString("g_ctp_no_timing_windows_filename", "PARAM/SHMS/GEN/pdet_cuts_no_timing_windows.param");
+  //  gHcParms->Load(gHcParms->GetString("g_ctp_no_timing_windows_filename"));
+
+  // Overwrite the existing reference times with
+  // the default values specified in hallc_replay.  
+  // gHcParms->AddString("g_ctp_no_reference_times_filename", "PARAM/HMS/GEN/h_no_reference_times.param");
+  // gHcParms->Load(gHcParms->GetString("g_ctp_no_reference_times_filename"));
+
+  // Now remove all Timing Windows and revert to 
+  // the default values specifid in hallc_replay
+  // gHcParms->AddString("g_ctp_no_timing_windows_filename", "PARAM/HMS/GEN/hdet_cuts_no_timing_windows.param");
+  // gHcParms->Load(gHcParms->GetString("g_ctp_no_timing_windows_filename"));
+  // *******
+  
   // Load the Hall C detector map
   gHcDetectorMap = new THcDetectorMap();
-  gHcDetectorMap->Load("MAPS/COIN/DETEC/coin.map");
+  //gHcDetectorMap->Load("MAPS/COIN/DETEC/coin.map");
+  gHcDetectorMap->Load(gHcParms->GetString("g_ctp_map_filename"));
 
-     // Dec data
+
+  // Dec data
   //   gHaApps->Add(new Podd::DecData("D","Decoder raw data"));
   //=:=:=:=
   // SHMS 
@@ -64,8 +93,8 @@ void replay_production_coin_hElec_pProt (Int_t RunNumber = 0, Int_t MaxEvent = 0
   SHMS->AddEvtType(7);
   gHaApps->Add(SHMS);
   // Add Noble Gas Cherenkov to SHMS apparatus
-  THcCherenkov* pngcer = new THcCherenkov("ngcer", "Noble Gas Cherenkov");
-  SHMS->AddDetector(pngcer);
+ // THcCherenkov* pngcer = new THcCherenkov("ngcer", "Noble Gas Cherenkov");
+ // SHMS->AddDetector(pngcer);
   // Add drift chambers to SHMS apparatus
   THcDC* pdc = new THcDC("dc", "Drift Chambers");
   SHMS->AddDetector(pdc);
@@ -117,11 +146,12 @@ void replay_production_coin_hElec_pProt (Int_t RunNumber = 0, Int_t MaxEvent = 0
   gHaEvtHandlers->Add(pscaler);
 
 
+
   //Add SHMS event handler for helicity scalers
   THcHelicityScaler *phelscaler = new THcHelicityScaler("P", "Hall C helicity scaler");
   //phelscaler->SetDebugFile("PHelScaler.txt");
   phelscaler->SetROC(8);
-  phelscaler->SetUseFirstEvent(kTRUE);
+  //  phelscaler->SetUseFirstEvent(kTRUE);
   gHaEvtHandlers->Add(phelscaler);
 
 
@@ -187,12 +217,13 @@ void replay_production_coin_hElec_pProt (Int_t RunNumber = 0, Int_t MaxEvent = 0
   gHaEvtHandlers->Add(hscaler);
 
 
+
   // Add HMS event handler for helicity scalers
-  THcHelicityScaler *hhelscaler = new THcHelicityScaler("H", "Hall C helicity scaler");
-  //hhelscaler->SetDebugFile("HHelScaler.txt");
-  hhelscaler->SetROC(5);
-  hhelscaler->SetUseFirstEvent(kTRUE);
-  gHaEvtHandlers->Add(hhelscaler);
+    THcHelicityScaler *hhelscaler = new THcHelicityScaler("H", "Hall C helicity scaler");
+    //    hhelscaler->SetDebugFile("HHelScaler.txt");
+    hhelscaler->SetROC(5);
+    //    hhelscaler->SetUseFirstEvent(kTRUE);
+    gHaEvtHandlers->Add(hhelscaler);
 
   
   //=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=
@@ -249,15 +280,53 @@ void replay_production_coin_hElec_pProt (Int_t RunNumber = 0, Int_t MaxEvent = 0
   // defining and controlling the output.
   THaEvent* event = new THaEvent;
 
-  // Define the run(s) that we want to analyze.
-  // We just set up one, but this could be many.
-  THcRun* run = new THcRun( pathList, Form(RunFileNamePattern, RunNumber) );
+  // Define the run(s) that we want to analyze. Segment 0 is mandatory because
+  // it initializes global counters needed by later segments. By default,
+  // discover all contiguous segments; a nonnegative MaxSegment overrides this.
+  vector<string> fileNames = {};
+  Int_t iseg = 0;
+  while(MaxSegment < 0 || iseg <= MaxSegment) {
+    TString codafilename;
+    codafilename.Form(RunFileNamePattern, RunNumber, iseg);
+
+    Bool_t foundSegment = kFALSE;
+    for(UInt_t ipath = 0; ipath < pathList.size(); ipath++) {
+      TString fullPath = TString(pathList[ipath]) + "/" + codafilename;
+      if(!gSystem->AccessPathName(fullPath)) {
+	foundSegment = kTRUE;
+	break;
+      }
+    }
+
+    if(!foundSegment) {
+      if(iseg == 0) {
+	cerr << "ERROR: Required segment 0 file " << codafilename
+	     << " was not found in the replay path list. "
+	     << "Segment 0 is required to initialize global counters." << endl;
+	cerr << "Searched paths:" << endl;
+	for(UInt_t ipath = 0; ipath < pathList.size(); ipath++) {
+	  cerr << "  " << pathList[ipath] << endl;
+	}
+	return;
+      }
+
+      cout << "Segment " << iseg << " file " << codafilename
+	   << " not found. Finished building input file list." << endl;
+      break;
+    }
+
+    cout << "codafilename = " << codafilename << endl;
+    fileNames.emplace_back(codafilename.Data());
+    iseg++;
+  }
+
+  auto* run = new Podd::MultiFileRun( pathList, fileNames );
 
   // Set to read in Hall C run database parameters
   run->SetRunParamClass("THcRunParameters");
   
   // Eventually need to learn to skip over, or properly analyze the pedestal events
-  run->SetEventRange(1, MaxEvent); // Physics Event number, does not include scaler or control events.
+  run->SetEventRange(FirstEvent, MaxEvent); // Physics Event number, does not include scaler or control events.
   run->SetNscan(1);
   run->SetDataRequired(0x7);
   run->Print();
@@ -276,13 +345,16 @@ void replay_production_coin_hElec_pProt (Int_t RunNumber = 0, Int_t MaxEvent = 0
   // Define output ROOT file
   analyzer->SetOutFile(ROOTFileName.Data());
   // Define DEF-file+
-  analyzer->SetOdefFile("DEF-files/COIN/PRODUCTION/coin_production_hElec_pProt.def");
+  // analyzer->SetOdefFile("DEF-files/COIN/PRODUCTION/coin_production_hElec_pProt.def");
+  analyzer->SetOdefFile("DEF-files/COIN/PRODUCTION/coin_production_hElec_pProt_light.def");
   // Define cuts file
   analyzer->SetCutFile("DEF-files/COIN/PRODUCTION/CUTS/coin_production_cuts.def");  // optional
   // File to record accounting information for cuts
   analyzer->SetSummaryFile(Form("REPORT_OUTPUT/COIN/PRODUCTION/summary_production_%d_%d.report", RunNumber, MaxEvent));  // optional
+
   // Start the actual analysis.
   analyzer->Process(run);
+
   // Create report file from template
   analyzer->PrintReport("TEMPLATES/COIN/PRODUCTION/coin_production.template",
   			Form("REPORT_OUTPUT/COIN/PRODUCTION/replay_coin_production_%d_%d.report", RunNumber, MaxEvent));  // optional

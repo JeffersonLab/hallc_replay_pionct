@@ -1,0 +1,49 @@
+#********************
+# Block Definitions *
+#********************
+block *EDTM*
+
+# Reference times
+variable T.hms.hFADC_TREF_ROC1_adcPulseTimeRaw
+variable T.hms.hT1_tdcTimeRaw
+variable T.hms.hT2_tdcTimeRaw
+block T.hms.hDCREF*tdcTimeRaw
+
+# Small blocks
+block H.cer.*
+block H.gtr.*
+block H.kin.*
+block H.rb.*
+block H.react.*
+block H.extcor.*
+
+# ------------------------------
+# hhodo light
+block H.hod.Time*
+block H.hod.bet*
+block H.hod.good*
+block H.hod.starttime
+variable H.hod.adctdc_offset
+variable H.hod.fpHitsTime
+
+# ------------------------------
+# hdc light
+block H.dc.*best
+block H.dc.res*
+block H.dc.x*
+block H.dc.y*
+block H.dc.*.wirenum
+block H.dc.*.time
+block H.dc.*.dist
+variable H.dc.InsideDipoleExit
+variable H.dc.chisq
+variable H.dc.ntrack
+block H.dc.*rawtdc
+
+# ------------------------------
+# hcal light
+variable H.cal.etottracknorm
+variable H.cal.nclust
+variable H.cal.etotnorm
+variable H.cal.eprtracknorm
+block H.cal.*good*AdcPulseInt

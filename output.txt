@@ -1,0 +1,27 @@
+
+=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:
+
+50k COIN HMS Report File Summary
+
+=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:
+
+Run #  :  26135
+BCM1 Beam Cut Current :  5.022 uA		  
+BCM2 Beam Cut Current :  5.102 uA		 
+BCM4A Beam Cut Current :  4.442 uA		  
+BCM4B Beam Cut Current :  28.582 uA		 
+BCM4C Beam Cut Current :  6.996 uA		 
+DAQ Pre-Scale Setting SHMS 3/4 : -1
+DAQ Pre-Scale Setting SHMS EL-REAL : -1
+DAQ Pre-Scale Setting HMS EL-REAL : -1
+DAQ Pre-Scale Setting HMS 3/4 : 1
+DAQ Pre-Scale Setting HMS EL-REAL x SHMS 3/4 : -1
+DAQ Pre-Scale Setting SHMS 3/4 x HMS 3/4 : -1
+SING FID TRACK EFFIC            :      0.9939 +-   0.0006
+E SING FID TRACK EFFIC          :      0.9943 +-   0.0033
+HADRON SING FID TRACK EFFIC     :      0.9942 +-   0.0016
+Plane 1 :  0.998749
+Plane 2 :  0.997088
+Plane 3 :  0.929931
+Plane 4 :  0.963160
+3_of_4 EFF  :  0.996992

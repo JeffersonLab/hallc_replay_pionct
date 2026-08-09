@@ -19,6 +19,8 @@
 #include "TCanvas.h"
 #include "TStopwatch.h"
 
+const double Mp = 0.938272;
+
 // ****
 // To-do
 // 1. Add RF plot (which branch to use?)
@@ -31,7 +33,7 @@
 // 1. list of analysis cuts to apply
 std::string anacuts = "(P.gtr.p<=2.9||P.hgcer.npeSum>1)&&P.aero.npeSum>2&&H.cer.npeSum>2&&H.cal.etottracknorm>0.7&&P.cal.etottracknorm<0.8&&abs(P.gtr.dp-5.)<15.&&abs(H.gtr.dp)<8.";
 // 2. histo ranges - Convention: {nbin,hmin,hmax}
-std::vector<double> hcoin_range{200,10,90};
+std::vector<double> hcoin_range{160,10,90};
 std::vector<double> hQ2_range{200,0.1,10},hx_range{200,0.01,1.2},hW_range{200,0.1,5},hz_range{200,0.01,1.2},hMMpi_range{200,-0.5,8};
 // ---
 // --- Advanced (for experts) ---
@@ -39,11 +41,14 @@ std::vector<double> hQ2_range{200,0.1,10},hx_range{200,0.01,1.2},hW_range{200,0.
 // 1. ROOT tree branch to get coin time
 std::string coinTbranch = "CTime.ePiCoinTime_ROC2"; 
 // 2. ns, Distance of the center of the block to choose randoms from the mean of the main coin peak
-double rndmscutdist = 18.;                  
+double rndmscutdist = 16.;                  
 // 3. Ratio of randoms cut region width to good coin cut region width
-double rndmscutfactor = 6.;
+double rndmscutfactor = 13.;
 // 4. Beam bunch structure (should be either 2 or 4 ns)
-double beambunchstruct = 4.;
+double beambunchstruct = 2.;
+// 5. Fixed mean mode (set "true" for e+ runs)
+bool isfixedmean = true;
+double fixedcmean = 51.3; //ns
 // --- **** ---
 // --- **** ---
 
@@ -51,7 +56,7 @@ double beambunchstruct = 4.;
 TF1* FitCoinPeak(TH1F *h);
 void CustomizeHist(TH1F *h);
 void PlotPtAccHisto(TH2* h2);
-void DetermineCoinCutRegion(TH1F* hcoin, double *fitparams, int verbosity, std::vector<double> &cutregion);
+void DetermineCoinCutRegion(TH1F* hcoin, double ctmean, int verbosity, std::vector<double> &cutregion);
 void PlotCutRegion(double xmin, double xmax, EColor fcolor, double alpha);
 void ExtractCoinEvCounts(TH1F *hcoin, std::vector<double> const &cutregion, int verbosity, std::vector<double> &counts);
 double ExtractValueFromReportFile(const std::string& filename, const std::string& key, const char delimiter, int skipCount);
@@ -60,7 +65,9 @@ void CalcNormYield(std::string const &inrepfile, double Nrealcoinev, double Nrea
 std::vector<std::string> SplitString(char const delim, std::string const myStr);
 TPaveText* CreateSummaryPaveText(int rnum, ULong64_t totevintree, const std::string& anacuts, const std::vector<double>& counts, double normyield, double descoinev, const std::vector<double>& predtrig, TStopwatch* sw);
 TPaveText* CreateSummaryPaveText_new(int rnum, const std::string& anacuts, const std::vector<double>& counts, double normyield, double descoinev, const std::vector<double>& predtrig, TStopwatch* sw);
-void PrintCSVLine(std::ofstream &out, int runnum, std::vector<double> const counts, std::vector<double> const normyield, double * coinfitparams);
+void PrintCSVLine(std::ofstream &out, int runnum, std::vector<double> const counts, std::vector<double> const normyield, double ctmean, double ctsigma);
+double getMA(TString tarName); 
+double getMMCut(TString tarName, TString QVal); 
 
 // global variables
 bool is_50k = false;
@@ -72,7 +79,9 @@ int get_good_coin_ev(int rnum,                 // Run number to analyze
 		     std::string indirroot="ROOTfiles", // Path to directory containing input ROOT file
 		     std::string indirreport="REPORT_OUTPUT/COIN/PRODUCTION", // Path to directory containing input report file
 		     std::string outdirplot="HISTOGRAMS/COIN/PDF", // Path to directory to save output plots
-		     std::string outfilebase="output_get_good_coin_ev") // output filename prefix
+		     std::string outfilebase="output_get_good_coin_ev", // output filename prefix
+         TString tarName = "C",  // target name for simc plot (H, ld2, C, Cu, Al)
+         TString QVal = "4.3")  // Q2 value for simc plot (8.5, 7.5, 6.5, 5)
 {
   gErrorIgnoreLevel = kError; // Ignores all ROOT warnings
 
@@ -82,8 +91,9 @@ int get_good_coin_ev(int rnum,                 // Run number to analyze
   TStopwatch *sw = new TStopwatch();
   sw->Start();
   
-  // Reading input ROOT files
+  // Reading input ROOT and REPORT files
   std::string inrfile = Form("%s/coin_replay_production_%d_%d.root",indirroot.c_str(),rnum,nevent); // input ROOT file name with directory path
+  std::string inrepfile = Form("%s/replay_coin_production_%d_%d.report",indirreport.c_str(),rnum,nevent); // input report file name with directory path
   ROOT::EnableImplicitMT();
   ROOT::RDataFrame data_rdf("T",inrfile.c_str());
   // Defining new columns
@@ -91,46 +101,146 @@ int get_good_coin_ev(int rnum,                 // Run number to analyze
   std::string z = Epi + "/H.kin.primary.nu";
   std::string pt2 = "pow(P.gtr.p,2)*(1.-pow(cos(P.kin.secondary.th_xq),2))";
   std::string pt = "sqrt(pow(P.gtr.p,2)*(1.-pow(cos(P.kin.secondary.th_xq),2)))";  
-  std::string ptxacc = pt + "*cos(P.kin.secondary.ph_xq)";
-  std::string ptyacc = pt + "*sin(P.kin.secondary.ph_xq)";
-  // MMpi^2 = Q2 * ((1-x)/x) * (1-z) + Mp^2 - pt^2/z;
-  std::string mmpi = "sqrt(H.kin.primary.Q2*((1.-H.kin.primary.x_bj)/H.kin.primary.x_bj)*(1.-"+z+")" + "+0.938*0.938-" + pt2+"/"+z+")";
-  //std::string mmpi = "pow(0.938+H.kin.primary.nu-"+Epi+",2.) - H.kin.primary.q3m*(H.kin.primary.q3m-2.*"+pt+")-pow(P.gtr.p,2)"; 
+  std::string ptx = pt + "*cos(P.kin.secondary.ph_xq)";
+  std::string pty = pt + "*sin(P.kin.secondary.ph_xq)";
+  double Ein = ExtractValueFromReportFile(inrepfile, "Beam energy", ':', 0); //GeV
+  auto calc_mm = [Ein](double epx, double epy, double epz, double ep,
+		       double ppx, double ppy, double ppz, double pp)
+  {
+    // Define 4-vectors
+    ROOT::Math::PxPyPzEVector Pe(0, 0, Ein, Ein);
+    ROOT::Math::PxPyPzEVector Peprime(epx, epy, epz, ep);
+    ROOT::Math::PxPyPzEVector Pp(0, 0, 0, Mp);
+    ROOT::Math::PxPyPzEVector Phadron(ppx, ppy, ppz, pp);
+    // Perform 4-vector arithmetic
+    auto Pmiss = (Pe - Peprime + Pp) - Phadron;
+    return Pmiss.M();
+  };  
+   double MA = 0.938272;
+   if (data_rdf.HasColumn("H.kin.primary.MA"))
+   {
+      double MA = data_rdf.Filter(anacuts).Mean("H.kin.primary.MA").GetValue(); 
+   }
+   else {std::cout << "primary.MA does not exist\n"; }
+ 
+
+  
+  double Q2mean = data_rdf.Filter(anacuts).Mean("H.kin.primary.Q2").GetValue();
+  double TrgMass = ExtractValueFromReportFile(inrepfile, "Target mass (amu)", ':', 0); 
+   
+  
+ 
+  //tarName = TrgMass < 2 ? "H" : (TrgMass < 11.5 ? "ld2" : (TrgMass < 60 ? "C" : "Cu") );
+  tarName = TrgMass < 2 ? "H" : (TrgMass < 11.5 ? "ld2" : (TrgMass < 20 ? "C" : (TrgMass < 60 ? "Al" : "Cu") ));
+
+
+  QVal = Q2mean < 6 ? "5" : (Q2mean < 7 ? "6.5" : (Q2mean < 8 ? "7.5" : "8.5"));
+  
+  std::cout << "Q2 Value is: " << Q2mean << '\n';
+ 
+
+  // determine nuclear mass  
+  MA = getMA(tarName);
+   std::cout << "Using Target mass = " << MA << "GeV\n";
+   double MMcutvalue = getMMCut(tarName, QVal);
+   std::cout << "For Missing Mass cut < " << MMcutvalue << "GeV\n";
+   if (tarName=="Al"){tarName="C";}
+  std::cout << "Selected simc hists: " << Form("%s_%s", tarName.Data(), QVal.Data()) << '\n'; 
+
+std::string MM="sqrt(-H.kin.primary.Q2+pow("+(std::string)Form("%f", MA)+",2)+.139*.139+2*H.kin.primary.nu*"+(std::string)Form("%f", MA)+ "-2*"+Epi+"*"+(std::string)Form("%f", MA)+ "-2*H.kin.primary.nu*"+Epi+"+2*sqrt(H.kin.primary.Q2+pow(H.kin.primary.nu,2))*P.gtr.p*cos(P.kin.secondary.th_xq))";
+ 
+ std::string MMcut="&&(MM<"+(std::string)Form("%f", MMcutvalue)+")";
+ std::string anacutsMM = anacuts+MMcut;
+  
   auto data_rdf_raw = data_rdf.Define("z",z.c_str())
-    .Define("mmpi",mmpi.c_str())
-    .Define("ptxacc",ptxacc.c_str())
-    .Define("ptyacc",ptyacc.c_str());
+    .Define("ptx",ptx.c_str())
+    .Define("pty",pty.c_str())
+    .Define("mmpi", calc_mm,
+	    {"H.gtr.px", "H.gtr.py", "H.gtr.pz", "H.gtr.p", "P.gtr.px", "P.gtr.py", "P.gtr.pz", "P.gtr.p"})
+    .Define("MM",MM.c_str());
+
+ // if (MA < 1.)
+ // {anacuts += "&&(MM < 1.05)" ;}
 
   // defining output ROOT file
   //Form("%s/%s_%d_%d.root",indirroot.c_str(),outfilebase.c_str(),rnum,nevent);
   TString outfile = inrfile; // Let's save the output files in the input root file
   TFile *fout = new TFile(outfile.Data(),"UPDATE");
+  
+  
+  // integrate MMhists.root 
+  
+  TString fsimdir = "simc/simHists.root"; 
+  TFile *fsim = new TFile(fsimdir.Data(), "READ"); 
+  TString MMsimHist = Form("%s_%s_MM", tarName.Data(), QVal.Data()); 
+  TString Q2simHist = Form("%s_%s_Q2", tarName.Data(), QVal.Data()); 
+  TString WsimHist = Form("%s_%s_W", tarName.Data(), QVal.Data()); 
+  TH1F* MMsim = (TH1F*)fsim->Get(MMsimHist); 
+  TH1F* Q2sim = (TH1F*)fsim->Get(Q2simHist);
+  TH1F* Wsim = (TH1F*)fsim->Get(WsimHist);
+  if (!MMsim) { std::cout << "could not retrieve " << Form("%s_%s_MM", tarName.Data(), QVal.Data()); }
+   if (!Q2sim) { std::cout << "could not retrieve " << Form("%s_%s_Q2", tarName.Data(), QVal.Data()); }
+    if (!Wsim) { std::cout << "could not retrieve " << Form("%s_%s_W", tarName.Data(), QVal.Data()); }
+  MMsim->SetDirectory(fout); 
+  Q2sim->SetDirectory(fout); 
+  Wsim->SetDirectory(fout); 
+  //CustomizeHist(MMsim); 
+  MMsim->SetLineColor(kBlue);
+  Q2sim->SetLineColor(kBlue);
+  Wsim->SetLineColor(kBlue);
+  MMsim->GetXaxis()->CenterTitle();
+  fsim->Close();
+  fout->cd();
+  
+  
+
 
   // Defining histos
+  //missing mass 
+   std::vector<double> MM_range{200, MA-0.2, MA+1.5};
+
+  TH1F *hMM = (TH1F*)data_rdf_raw.Filter(anacuts)
+    .Histo1D({"MM","",int(MM_range[0]),MM_range[1], MM_range[2]},"MM")->Clone();
+  hMM->GetXaxis()->SetTitle("Missing Mass [GeV/c^2]"); 
+  TH1F* hMM_norm = (TH1F*)(hMM->Clone());
+  hMM_norm->Scale(1./hMM_norm->Integral());
+	    
   // coin 
   TH1F *hcoin = (TH1F*)data_rdf_raw.Filter(anacuts)
     .Histo1D({"hcoin","",int(hcoin_range[0]),hcoin_range[1],hcoin_range[2]},coinTbranch.c_str())->Clone();
-  hcoin->GetXaxis()->SetTitle("e-#pi Coincidence Time (ns)"); CustomizeHist(hcoin); 
+  hcoin->GetXaxis()->SetTitle("e-#pi Coincidence Time (ns)"); CustomizeHist(hcoin);
+
+ TH1F *hcoin_mmcut = (TH1F*)data_rdf_raw.Filter(anacutsMM)
+    .Histo1D({"hcoin_mmcut","",int(hcoin_range[0]),hcoin_range[1],hcoin_range[2]},coinTbranch.c_str())->Clone();
+  
   // kine
   TH1F *hx = (TH1F*)data_rdf_raw.Filter(anacuts+"&&abs(H.kin.primary.x_bj)<3")
     .Histo1D({"hx","",int(hx_range[0]),hx_range[1],hx_range[2]},"H.kin.primary.x_bj")->Clone();
   hx->GetXaxis()->SetTitle("x_{bj}"); CustomizeHist(hx);
   TH1F *hQ2 = (TH1F*)data_rdf_raw.Filter(anacuts+"&&abs(H.kin.primary.Q2)<10")
     .Histo1D({"hQ2","",int(hQ2_range[0]),hQ2_range[1],hQ2_range[2]},"H.kin.primary.Q2")->Clone();
-  hQ2->GetXaxis()->SetTitle("Q^{2} (GeV/c)^{2}"); CustomizeHist(hQ2); 
+    TH1F* hQ2_norm = (TH1F*)(hQ2->Clone()); 
+  hQ2_norm->Scale(1./hQ2_norm->Integral());
+  hQ2_norm->GetXaxis()->SetTitle("Q^{2} (GeV/c)^{2}"); CustomizeHist(hQ2); 
   TH1F *hz = (TH1F*)data_rdf_raw.Filter(anacuts+"&&abs(P.gtr.p)<10")
     .Histo1D({"hz","",int(hz_range[0]),hz_range[1],hz_range[2]},"z")->Clone();
   hz->GetXaxis()->SetTitle("z"); CustomizeHist(hz);
-  TH1F *hW = (TH1F*)data_rdf_raw.Filter(anacuts+"&&abs(H.kin.primary.W)<10")
+  TH1F *hW = (TH1F*)data_rdf_raw.Filter(anacuts+"&&abs(H.kin.primary.W)<6")
     .Histo1D({"hW","",int(hW_range[0]),hW_range[1],hW_range[2]},"H.kin.primary.W")->Clone();
-  hW->GetXaxis()->SetTitle("W (GeV)"); CustomizeHist(hW);
+  TH1F* hW_norm = (TH1F*)(hW->Clone()); 
+  hW_norm->Scale(1./hW_norm->Integral());
+  hW_norm->GetXaxis()->SetTitle("W (GeV)"); CustomizeHist(hW);
   TH1F *hMMpi = (TH1F*)data_rdf_raw.Filter(anacuts+"&&abs(P.kin.secondary.MMpi)<10")
     .Histo1D({"hMMpi","",int(hMMpi_range[0]),hMMpi_range[1],hMMpi_range[2]},"P.kin.secondary.MMpi")->Clone();
   TH1F *hMMpi_pd = (TH1F*)data_rdf_raw.Filter(anacuts+"&&abs(P.gtr.p)<10")
-    .Histo1D({"hMMpi_pd","",int(hMMpi_range[0]),hMMpi_range[1],hMMpi_range[2]},"mmpi")->Clone();  
-  hMMpi->GetXaxis()->SetTitle("Missing Mass (GeV)"); CustomizeHist(hMMpi);     
+    .Histo1D({"hMMpi_pd","",int(hMMpi_range[0]),hMMpi_range[1],hMMpi_range[2]},"mmpi")->Clone();
+  TH1F *hMMpi_pd_norm = (TH1F*)(hMMpi_pd->Clone("h1"));
+  hMMpi_pd_norm->Scale(1./hMMpi_pd_norm->Integral()); 
+  hMMpi_pd_norm->GetXaxis()->SetTitle("Missing Mass (normalized)"); 
+  CustomizeHist(hMMpi_pd_norm); 
+  hMMpi_pd->GetXaxis()->SetTitle("Missing Mass (GeV)"); CustomizeHist(hMMpi_pd);     
   TH2F *h2ptaccp = (TH2F*)data_rdf_raw.Filter(anacuts+"&&abs(P.gtr.p)<10")
-    .Histo2D({"h2ptaccp","",100,-1,1.,100,-1.,1.},"ptxacc","ptyacc")->Clone();
+    .Histo2D({"h2ptaccp","",100,-1,1.,100,-1.,1.},"ptx","pty")->Clone();
   // beta
   TH2F *h2hbetaVScoin = (TH2F*)data_rdf_raw.Filter(anacuts+"&&H.gtr.beta>0")
     .Histo2D({"h2hbetaVScoin","",int(hcoin_range[0]),hcoin_range[1],hcoin_range[2],100,0.2,1.4},coinTbranch.c_str(),"H.gtr.beta")->Clone();
@@ -142,7 +252,10 @@ int get_good_coin_ev(int rnum,                 // Run number to analyze
   h2pbetaVScoin->SetStats(0);
   h2pbetaVScoin->GetYaxis()->SetTitle("SHMS #beta"); h2pbetaVScoin->GetYaxis()->CenterTitle();  
   h2pbetaVScoin->GetXaxis()->SetTitle("e-#pi Coincidence Time (ns)"); h2pbetaVScoin->GetXaxis()->CenterTitle();  
+ 
 
+  if(!hMM_norm || !hMM) {std::cout << "could not generate missing mass plot\n"; } 
+  
   // Plotting and fitting the coin time histo
   TCanvas *ccoin = new TCanvas("ccoin","ccoin",1500,600);
   ccoin->Divide(2,1);  
@@ -150,23 +263,30 @@ int get_good_coin_ev(int rnum,                 // Run number to analyze
   gStyle->SetOptStat("e");
   gStyle->SetOptFit(1);
   // fitting the coin histo
-  TF1 *fcoin = FitCoinPeak(hcoin);
   double fitparams[3];
-  fcoin->GetParameters(&fitparams[0]);
+  TF1 *fcoin;
+  hcoin->SetDirectory(fout);
+  hcoin->Draw();
+  if (!isfixedmean) {
+    fcoin = FitCoinPeak(hcoin);
+    fcoin->GetParameters(&fitparams[0]);
+  }
   hcoin->Write("",TObject::kOverwrite);
 
   // determining and plotting the coin time cut regions
   std::vector<double> coincutregion;
-  DetermineCoinCutRegion(hcoin,fitparams,0,coincutregion);
+  double ctmean = !isfixedmean ? fitparams[1] : fixedcmean;
+  double ctsigma = !isfixedmean ? fitparams[2] : 0.5; //0.5 ns is an educated guess
+  DetermineCoinCutRegion(hcoin,ctmean,0,coincutregion);
   PlotCutRegion(coincutregion[0],coincutregion[1],kGreen,0.3); // main coin peak
   PlotCutRegion(coincutregion[2],coincutregion[3],kRed,0.3);   // randoms to the left of main peak
 
   // Extracting the desired counts
   std::vector<double> counts;
-  ExtractCoinEvCounts(hcoin,coincutregion,1,counts);
+  ExtractCoinEvCounts(hcoin_mmcut,coincutregion,1,counts);
   
   // Predicting the # triggers needed to get 100K good coin events
-  std::string inrepfile = Form("%s/replay_coin_production_%d_%d.report",indirreport.c_str(),rnum,nevent); // input report file name with directory path
+
   std::vector<double> predtrig;
   PredictNoOfTriggersNeeded(inrepfile,counts,descoinev,0,predtrig);
 
@@ -178,14 +298,14 @@ int get_good_coin_ev(int rnum,                 // Run number to analyze
   ccoin->cd(2);
   ULong64_t nEntries = *data_rdf.Count();
   //std::cout << nEntries << "\n";
-  TPaveText* pvtxt = CreateSummaryPaveText(rnum, nEntries, anacuts, counts, normyield[0], descoinev, predtrig, sw);
+  TPaveText* pvtxt = CreateSummaryPaveText(rnum, nEntries, anacutsMM, counts, normyield[0], descoinev, predtrig, sw);
   pvtxt->Draw();
   ccoin->Update();
   ccoin->Write("",TObject::kOverwrite);
 
   // Ploting several physics histograms
   TCanvas *cphys = new TCanvas("cphys","cphys",1500,800);
-  cphys->Divide(3,2);  
+  cphys->Divide(2,2);  
   gStyle->SetOptStat(1111);
   //
   cphys->cd(1);
@@ -193,28 +313,75 @@ int get_good_coin_ev(int rnum,                 // Run number to analyze
   hx->Write("",TObject::kOverwrite);
   //
   cphys->cd(2);
-  hQ2->Draw();
-  hQ2->Write("",TObject::kOverwrite);
+  hQ2_norm->GetXaxis()->SetRangeUser(0.5, 10);
+  hQ2_norm->SetStats(0);
+  Q2sim->SetStats(0);
+  auto scalefac = hQ2_norm->GetMaximum()/ Q2sim->GetMaximum(); 
+  Q2sim->Scale(scalefac);
+  hQ2_norm->Draw("HIST");
+  Q2sim->Draw("HIST SAME"); 
+  auto legend1 = new TLegend(0.75, 0.75, 0.89, 0.89);
+  legend1->AddEntry(Q2sim, "Simulation", "l");
+  legend1->AddEntry(hQ2_norm, "True", "l");
+  legend1->Draw();
+  legend1->Write("",TObject::kOverwrite); 
+  hQ2_norm->Write("",TObject::kOverwrite);
+  Q2sim->Write("Q2sim", TObject::kOverwrite);
   //
+  /*
   cphys->cd(3);
   hz->Draw();
   hz->Write("",TObject::kOverwrite);
+  */
+  //
+  cphys->cd(3);
+  hW_norm->GetXaxis()->SetRangeUser(0.5, 4);
+  hW_norm->SetStats(0);
+  Wsim->SetStats(0);
+  auto scalefac2 = hW_norm->GetMaximum()/ Wsim->GetMaximum(); 
+  Wsim->Scale(scalefac2);
+  hW_norm->Draw("HIST");
+  Wsim->Draw("HIST SAME"); 
+  auto legend2 = new TLegend(0.75, 0.75, 0.89, 0.89);
+  legend2->AddEntry(Wsim, "Simulation", "l");
+  legend2->AddEntry(hW_norm, "True", "l");
+  legend2->Draw();
+  legend2->Write("",TObject::kOverwrite); 
+  hW_norm->Write("",TObject::kOverwrite);
+  Wsim->Write("Wsim", TObject::kOverwrite);
+  
   //
   cphys->cd(4);
-  hW->Draw();
-  hW->Write("",TObject::kOverwrite);
+ 
+ hMMpi_pd_norm->GetXaxis()->SetRangeUser(0, 16);
+  hMMpi_pd_norm->SetStats(0);
+  hMM_norm->SetStats(0);
+  hMM_norm->SetDirectory(fout);
+  MMsim->SetStats(0);
+  auto scalefac3 = hMM_norm->GetMaximum()/ MMsim->GetMaximum(); 
+  MMsim->Scale(scalefac3);
+
+ 
+  hMM_norm->Draw("HIST");
+  
+  
+  MMsim->Draw("HIST SAME"); 
+  auto legend3 = new TLegend(0.75, 0.75, 0.89, 0.89);
+  legend3->AddEntry(MMsim, "Simulation", "l");
+  legend3->AddEntry(hMM_norm, "True", "l");
+  legend3->Draw();
+  legend3->Write("",TObject::kOverwrite); 
+  hMM_norm->Write("hMM_norm",TObject::kOverwrite);
+  MMsim->Write("MMsim", TObject::kOverwrite);
+  hMMpi_pd_norm->Write("hMMpi_pd_norm", TObject::kOverwrite);
+  cphys->Write("",TObject::kOverwrite);
   //
-  cphys->cd(5);
-  hMMpi->Draw();
-  hMMpi->Write("",TObject::kOverwrite);
-  hMMpi_pd->Write("",TObject::kOverwrite);    
-  //
-  cphys->cd(6);
+  /*cphys->cd(6);
   PlotPtAccHisto(h2ptaccp);
   h2ptaccp->Write("",TObject::kOverwrite);
   cphys->Update();
   cphys->Write("",TObject::kOverwrite);
-
+*/
   // Plotting beta vs coin time
   TCanvas *cbeta = new TCanvas("cbeta","cbeta",1500,600);
   cbeta->Divide(2,1);
@@ -239,7 +406,7 @@ int get_good_coin_ev(int rnum,                 // Run number to analyze
   // Writing out some useful stuff
   std::string outcsv = Form("%s/%s_%d_%d.csv",indirreport.c_str(),outfilebase.c_str(),rnum,nevent);
   std::ofstream outcsv_data(outcsv.c_str());
-  PrintCSVLine(outcsv_data,rnum,counts,normyield,fitparams);  
+  PrintCSVLine(outcsv_data,rnum,counts,normyield,ctmean,ctsigma);  
 
   std::cout << "------" << std::endl;
   std::cout << " Output CSV file  : " << outcsv << std::endl;  
@@ -333,7 +500,7 @@ double FindMinAfterPeak(TH1F* hist)
   }
 }
 //----------------------------------------------------------
-void DetermineCoinCutRegion(TH1F* hcoin, double * fitparams, int verbosity, std::vector<double> &cutregion)
+void DetermineCoinCutRegion(TH1F* hcoin, double ctmean, int verbosity, std::vector<double> &cutregion)
 /* Determines the coin cut regions
 */
 {
@@ -356,15 +523,15 @@ void DetermineCoinCutRegion(TH1F* hcoin, double * fitparams, int verbosity, std:
   // -- 3rd approach    
   // double firstminima = FindMinAfterPeak(hcoin); // minima immediately after the main peak
   // cutwidth = firstminima - fitparams[1]; 
-  double xlowgood = fitparams[1] - cutwidth;
-  double xhigood = fitparams[1] + cutwidth;
+  double xlowgood = ctmean - cutwidth;
+  double xhigood = ctmean + cutwidth;
   // ---
   // determining the cut widths for randoms
   // ---
   // Distance of the center of the block to choose randoms from the mean of the good coin time peak  
   double dist = rndmscutdist; 
-  double xlowrndm = fitparams[1] - dist - rndmscutfactor*cutwidth;
-  double xhirndm = fitparams[1] - dist + rndmscutfactor*cutwidth;
+  double xlowrndm = ctmean - dist - rndmscutfactor*cutwidth;
+  double xhirndm = ctmean - dist + rndmscutfactor*cutwidth;
 
   cutregion = {xlowgood,xhigood,xlowrndm,xhirndm};
 
@@ -525,25 +692,30 @@ void CalcNormYield(std::string const &inrepfile, // Input report file name with 
 		   std::vector<double> &NormYield)
 /* Calculates charge normalized and efficiency corrected yeild from random subtracted coin events */
 {
-  //double charge = ExtractValueFromReportFile(inrepfile, "HMS BCM4A Beam Cut Charge", ':'); //mC
-  double charge = ExtractValueFromReportFile(inrepfile, "SHMS BCM4B Beam Cut Charge", ':', 0); //mC  
-  double compdeadtime = ExtractValueFromReportFile(inrepfile, "HMS Computer Dead Time", ':', 0)/100.0;
+  double psfactor = -999;
+  double ps5 = ExtractValueFromReportFile(inrepfile, "Ps5_factor", '=', 0);
+  double ps6 = ExtractValueFromReportFile(inrepfile, "Ps6_factor", '=', 0);  
+  psfactor =  ps5==-1 ? ps6 : ps5;
+  double livetime = ExtractValueFromReportFile(inrepfile, "ROC2 Pre-Scaled Ps5 ROC2 Computer Live Time (no BCM cut)", ':', 0)/100.0;
+  if (psfactor == ps6)
+    livetime = ExtractValueFromReportFile(inrepfile, "ROC2 Pre-Scaled Ps6 ROC2 Computer Live Time (no BCM cut)", ':', 0)/100.0;
+  double charge = ExtractValueFromReportFile(inrepfile, "SHMS BCM2 Beam Cut Charge", ':', 0); //mC  
   double treffiHMS = ExtractValueFromReportFile(inrepfile, "E SING FID TRACK EFFIC", ':', 1);  
   double treffiSHMS = ExtractValueFromReportFile(inrepfile, "HADRON SING FID TRACK EFFIC", ':', 0);
   double trigeffi = 1.0; // assuming 100% efficiency for the moment
 
-  //double normyield = Nrealcoinev / (charge * compdeadtime * treffiHMS * treffiSHMS * trigeffi);
-  
-  double normfac = 1. / (charge * compdeadtime * treffiHMS * treffiSHMS * trigeffi);
+  if (livetime>1) livetime = 1.0;    
+  double normfac = psfactor / (charge * livetime * treffiHMS * treffiSHMS * trigeffi);
   
   double normyield = Nrealcoinev * normfac ; // 1/mC
   double normyield_err = Nrealcoinev_err * normfac; 
   
   if (verbosity>0) {
     std::cout << "\n--- Normalized Yield ---\n";
-    std::cout << "Real Coin Ev            : " << (int)Nrealcoinev << "\n";    
+    std::cout << "Real Coin Ev            : " << (int)Nrealcoinev << " +/- " << Nrealcoinev_err << "\n";    
     std::cout << "Charge (mC)             : " << charge << "\n";
-    std::cout << "Computer dead time      : " << compdeadtime << "\n";
+    std::cout << "PS factor               : " << psfactor << "\n";
+    std::cout << "Computer live time      : " << livetime << "\n";
     std::cout << "Tracking Effi. HMS      : " << treffiHMS << "\n";
     std::cout << "Tracking Effi. SHMS     : " << treffiSHMS << "\n";        
     std::cout << "Trigger Effi.           : " << trigeffi << "\n";
@@ -694,10 +866,13 @@ TPaveText* CreateSummaryPaveText(int rnum,
       tmpstr = "";
     }
   }
+  double bgsubcounts = 0.8*counts[2];
+  double bgsubyield = 0.8*normyield;
+
   pvtxt->AddText("Counts:");
   pvtxt->AddText(Form("Number of Real (Randoms Subtracted) Coin Events : %.0f", counts[2]));
   pvtxt->AddText(Form("Charge Normalized and Efficiency Corrected Yield : %.1f (1/mC)", normyield));
-  pvtxt->AddText(Form("Rate of Good Coin Events : %.4f per CODA event", (double)counts[2]/(double)totevintree));
+  //pvtxt->AddText(Form("Good coin events and rate subtracting a 20% background : %.1f events, %.1f (1/mC)", bgsubcounts, bgsubyield));
   sw->Stop();
   if (is_50k) {
     pvtxt->AddText("Predictions");
@@ -723,7 +898,7 @@ TPaveText* CreateSummaryPaveText(int rnum,
   return pvtxt;
 }
 //----------------------------------------------------------
-void PrintCSVLine(std::ofstream &out, int runnum, std::vector<double> const counts, std::vector<double> const normyield, double * ctfitparams) {
+void PrintCSVLine(std::ofstream &out, int runnum, std::vector<double> const counts, std::vector<double> const normyield, double ctmean, double ctsigma) {
   
   std::ostringstream oss;
   oss << "runnum,coin,randoms,ransubcoin,ransubcoin_err,normyield,normyield_err,";
@@ -735,12 +910,54 @@ void PrintCSVLine(std::ofstream &out, int runnum, std::vector<double> const coun
       << counts[5] << ","        
       << normyield[0] << ","
       << normyield[1] << ","
-      << ctfitparams[1] << ","
-      << ctfitparams[2];
+      << ctmean << ","
+      << ctsigma;
 
   out << oss.str() << std::endl;
 }
+double getMA(TString tarName)
+{
 
+
+  if (tarName == "H") {return 0.938272; }
+  if (tarName == "ld2") {return 1.8756;}
+  if (tarName == "C") {return 11.178; }
+  if (tarName == "Cu") {return 58.618;}
+  else {return 0.938272;}
+  
+}
+
+//these cuts may need to be modified!
+//using the 20% background contamination from BeAGLE
+//HSV, 8AUG26
+double getMMCut(TString tarName, TString QVal)
+{
+  if (QVal=="5"){
+    if (tarName == "H") {return 1.05; }
+    if (tarName == "ld2") {return 2.26;}
+    if (tarName == "C") {return 11.73; }
+    if (tarName == "Cu") {return 59.17;}
+  }
+  else if (QVal=="6.5"){
+    if (tarName == "H") {return 1.05; }
+    if (tarName == "ld2") {return 2.29;}
+    if (tarName == "C") {return 11.79; }
+    if (tarName == "Cu") {return 59.24;}
+  }
+  else if (QVal=="7.5"){
+    if (tarName == "H") {return 1.05; }
+    if (tarName == "ld2") {return 2.28;}
+    if (tarName == "C") {return 11.77; }
+    if (tarName == "Cu") {return 59.21;}
+  }
+  else if (QVal=="8.5"){
+    if (tarName == "H") {return 1.05; }
+    if (tarName == "ld2") {return 2.27;}
+    if (tarName == "C") {return 11.75; }
+    if (tarName == "Cu") {return 59.2;}
+  }
+  else {return 60.0;}
+}
 /* extra stuff 
 
 

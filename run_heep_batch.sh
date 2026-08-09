@@ -28,7 +28,7 @@ reportMonDir="./UTIL_OL/REP_MON"
 replayFile="${spec}_replay_production_${run_number}"
 rootFile="${replayFile}_${events}.root"
 
-outExpertFile="summaryPlots_${run_number}_${spec}_production_pionct"
+outExpertFile="summaryPlots_${run_number}_${spec}_production_rsidis"
 
 reportFile="${reportFileDir}/replay_${spec}_production_${run_number}_${events}.report"
 replayLog="${batchOutDir}/replay_${spec}_production_${run_number}_${events}.report.log"

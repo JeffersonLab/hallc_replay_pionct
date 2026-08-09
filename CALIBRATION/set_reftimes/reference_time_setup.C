@@ -250,16 +250,24 @@ void run_shms_reference_time_setup(TString infile, int RunNumber, TString outfil
   c6_pT->Write();
   c7_pFADC_ROC2->Write();
 
-  TString outplot = "move_it";  
-  c1_pdcref->Print(Form("%s.pdf[",outplot.Data()));;
-  c1_pdcref->Print(Form("%s.pdf",outplot.Data()));;  
-  c2_pdcref->Print(Form("%s.pdf",outplot.Data()));;
-  c3_pdcref->Print(Form("%s.pdf",outplot.Data()));;
-  c4_pdcref->Print(Form("%s.pdf",outplot.Data()));;
-  c5_pdcref->Print(Form("%s.pdf",outplot.Data()));;
-  c6_pT->Print(Form("%s.pdf",outplot.Data()));;
-  c7_pFADC_ROC2->Print(Form("%s.pdf",outplot.Data()));;
-  c7_pFADC_ROC2->Print(Form("%s.pdf]",outplot.Data()));;  
+  TString outplot = "move_it";
+  c1_pdcref->Print(Form("%s.pdf[", outplot.Data()));
+  c1_pdcref->Print(Form("%s.pdf", outplot.Data()));
+  c2_pdcref->Print(Form("%s.pdf", outplot.Data()));
+  c3_pdcref->Print(Form("%s.pdf", outplot.Data()));
+  c4_pdcref->Print(Form("%s.pdf", outplot.Data()));
+  c5_pdcref->Print(Form("%s.pdf", outplot.Data()));
+  c6_pT->Print(Form("%s.pdf", outplot.Data()));
+  c7_pFADC_ROC2->Print(Form("%s.pdf", outplot.Data()));
+  
+  // TString outplot = "move_it";  
+  // c1_pdcref->Print(Form("%s.pdf",outplot.Data()));;  
+  // c2_pdcref->Print(Form("%s.pdf",outplot.Data()));;
+  // c3_pdcref->Print(Form("%s.pdf",outplot.Data()));;
+  // c4_pdcref->Print(Form("%s.pdf",outplot.Data()));;
+  // c5_pdcref->Print(Form("%s.pdf",outplot.Data()));;
+  // c6_pT->Print(Form("%s.pdf",outplot.Data()));;
+  // c7_pFADC_ROC2->Print(Form("%s.pdf",outplot.Data()));;
   
   f2->Write();
   f2->Close();
@@ -513,8 +521,8 @@ void run_hms_reference_time_setup(TString infile, int RunNumber, TString outfile
   c6_hT->Write();
   c7_hFADC_ROC1->Write();
 
-  TString outplot = "move_it";
-  c1_hdcref->Print(Form("%s.pdf[",outplot.Data()));;  
+
+  TString outplot = "move_it";  
   c1_hdcref->Print(Form("%s.pdf",outplot.Data()));;
   c2_hdcref->Print(Form("%s.pdf",outplot.Data()));;
   if(histoFound) {
@@ -522,7 +530,7 @@ void run_hms_reference_time_setup(TString infile, int RunNumber, TString outfile
   }
   c6_hT->Print(Form("%s.pdf",outplot.Data()));;
   c7_hFADC_ROC1->Print(Form("%s.pdf",outplot.Data()));;
-  c7_hFADC_ROC1->Print(Form("%s.pdf]",outplot.Data()));;  
+  c7_hFADC_ROC1->Print(Form("%s.pdf]",outplot.Data()));; 
   
   f2->Write();
   f2->Close();
@@ -531,9 +539,21 @@ void run_hms_reference_time_setup(TString infile, int RunNumber, TString outfile
   return;
 }
 
-void run_coin_reference_time_setup(TString infile, int RunNumber, TString outfile="move_me.root") {
+// void run_coin_reference_time_setup(TString infile, int RunNumber, TString outfile="move_me.root") {
+
+//   TString outplot = "move_it";
+
+//   TCanvas ctmp;
+//   //ctmp.Print(Form("%s.pdf[", outplot.Data()));
   
+//   run_shms_reference_time_setup(infile, RunNumber, outfile,"coin");
+//   run_hms_reference_time_setup(infile, RunNumber, outfile,"coin");
+
+//   //ctmp.Print(Form("%s.pdf]", outplot.Data()));
+//   return;
+// }
+
+void run_coin_reference_time_setup(TString infile, int RunNumber, TString outfile="move_me.root") {
   run_shms_reference_time_setup(infile, RunNumber, outfile,"coin");
   run_hms_reference_time_setup(  infile, RunNumber, outfile,"coin");
-  return;
 }
