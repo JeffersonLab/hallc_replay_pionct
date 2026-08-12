@@ -63,10 +63,11 @@ double ExtractValueFromReportFile(const std::string& filename, const std::string
 void PredictNoOfTriggersNeeded(std::string const &inrepfile, std::vector<double> const &counts, double descoinev, int verbosity, std::vector<double> &outputs);
 void CalcNormYield(std::string const &inrepfile, double Nrealcoinev, double Nrealcoinev_err, int verbosity, std::vector<double> &NormYield);
 std::vector<std::string> SplitString(char const delim, std::string const myStr);
-TPaveText* CreateSummaryPaveText(int rnum, ULong64_t totevintree, const std::string& anacuts, const std::vector<double>& counts, double normyield, double descoinev, const std::vector<double>& predtrig, TStopwatch* sw);
+TPaveText* CreateSummaryPaveText(int rnum, ULong64_t totevintree, const std::string& anacuts, const std::vector<double>& counts, double normyield, double descoinev,double chrge, const std::vector<double>& predtrig, TStopwatch* sw);
 TPaveText* CreateSummaryPaveText_new(int rnum, const std::string& anacuts, const std::vector<double>& counts, double normyield, double descoinev, const std::vector<double>& predtrig, TStopwatch* sw);
 void PrintCSVLine(std::ofstream &out, int runnum, std::vector<double> const counts, std::vector<double> const normyield, double ctmean, double ctsigma);
 double getMA(TString tarName); 
+double getMMCut(TString tarName, TString QVal); 
 
 // global variables
 bool is_50k = false;
@@ -79,7 +80,7 @@ int get_good_coin_ev_tmp(int rnum,                 // Run number to analyze
 		     std::string indirreport="REPORT_OUTPUT/COIN/PRODUCTION", // Path to directory containing input report file
 		     std::string outdirplot="HISTOGRAMS/COIN/PDF", // Path to directory to save output plots
 		     std::string outfilebase="output_get_good_coin_ev", // output filename prefix
-         TString tarName = "C",  // target name for simc plot (H, ld2, C, Cu)
+         TString tarName = "C",  // target name for simc plot (H, ld2, C, Cu, Al)
          TString QVal = "4.3")  // Q2 value for simc plot (8.5, 7.5, 6.5, 5)
 {
   gErrorIgnoreLevel = kError; // Ignores all ROOT warnings
@@ -103,6 +104,18 @@ int get_good_coin_ev_tmp(int rnum,                 // Run number to analyze
   std::string ptx = pt + "*cos(P.kin.secondary.ph_xq)";
   std::string pty = pt + "*sin(P.kin.secondary.ph_xq)";
   double Ein = ExtractValueFromReportFile(inrepfile, "Beam energy", ':', 0); //GeV
+  double charge = ExtractValueFromReportFile(inrepfile, "SHMS BCM2  Beam Cut Charge", ':', 0); //mC
+   double MA = 0.938272;
+   if (data_rdf.HasColumn("H.kin.primary.MA"))
+   {
+      double MA = data_rdf.Filter(anacuts).Mean("H.kin.primary.MA").GetValue(); 
+   }
+   else {std::cout << "primary.MA does not exist\n"; }
+ 
+
+  
+  double Q2mean = data_rdf.Filter(anacuts).Mean("H.kin.primary.Q2").GetValue();
+  double TrgMass = ExtractValueFromReportFile(inrepfile, "Target mass (amu)", ':', 0);
   auto calc_mm = [Ein](double epx, double epy, double epz, double ep,
 		       double ppx, double ppy, double ppz, double pp)
   {
@@ -115,39 +128,58 @@ int get_good_coin_ev_tmp(int rnum,                 // Run number to analyze
     auto Pmiss = (Pe - Peprime + Pp) - Phadron;
     return Pmiss.M();
   };  
-   double MA = 0.938272;
-   if (data_rdf.HasColumn("H.kin.primary.MA"))
-   {
-      double MA = data_rdf.Filter(anacuts).Mean("H.kin.primary.MA").GetValue(); 
-   }
-   else {std::cout << "primary.MA does not exist\n"; }
- 
+   tarName = TrgMass < 2 ? "H" : (TrgMass < 11.5 ? "ld2" : (TrgMass < 20 ? "C" : (TrgMass < 60 ? "Al" : "Cu") ));
 
-  
-  double Q2mean = data_rdf.Filter(anacuts).Mean("H.kin.primary.Q2").GetValue();
-  double TrgMass = ExtractValueFromReportFile(inrepfile, "Target mass (amu)", ':', 0); 
-   
-  
- 
-  tarName = TrgMass < 2 ? "H" : (TrgMass < 11.5 ? "D" : (TrgMass < 60 ? "C" : "Cu") );
+
   QVal = Q2mean < 6 ? "5" : (Q2mean < 7 ? "6.5" : (Q2mean < 8 ? "7.5" : "8.5"));
   
   std::cout << "Q2 Value is: " << Q2mean << '\n';
  
 
-  std::cout << "Selected simc hists: " << Form("%s_%s", tarName.Data(), QVal.Data()) << '\n'; 
   // determine nuclear mass  
-    MA = getMA(tarName);
-   std::cout << "Using Target mass = " << MA << "GeV\n";
-    
-std::string MM="sqrt(-H.kin.primary.Q2+pow("+(std::string)Form("%f", MA)+",2)+.139*.139+2*H.kin.primary.nu*"+(std::string)Form("%f", MA)+ "-2*"+Epi+"*"+(std::string)Form("%f", MA)+ "-2*H.kin.primary.nu*"+Epi+"+2*sqrt(H.kin.primary.Q2+pow(H.kin.primary.nu,2))*P.gtr.p*cos(P.kin.secondary.th_xq))";
+  MA = getMA(tarName);
+   
+double neutronMass = 0.939565;
+// recoil mass fixed at the neutron mass for all targets -- confirmed by
+// simulated Em peaks (H: 1.373, C: 1.455, Cu: 1.471 GeV) all clustering
+// near the single-nucleon scale regardless of target mass.
+double Mrecoil = neutronMass;
 
+auto calc_em = [Ein, Mrecoil](double epx, double epy, double epz, double ep,
+                               double ppx, double ppy, double ppz, double pp)
+{
+  ROOT::Math::PxPyPzEVector Pe(0, 0, Ein, Ein);
+  ROOT::Math::PxPyPzEVector Peprime(epx, epy, epz, ep);
+  ROOT::Math::PxPyPzEVector Pp(0, 0, 0, Mp);
+  ROOT::Math::PxPyPzEVector Phadron(ppx, ppy, ppz, pp);
+
+  auto Pmiss = (Pe - Peprime + Pp) - Phadron;
+  double Pm = Pmiss.P();
+
+  return sqrt(Pm*Pm + Mrecoil*Mrecoil);
+};
+ 
+  //tarName = TrgMass < 2 ? "H" : (TrgMass < 11.5 ? "ld2" : (TrgMass < 60 ? "C" : "Cu") );
+  
+   std::cout << "Using Target mass = " << MA << "GeV\n";
+   double MMcutvalue = getMMCut(tarName, QVal);
+   std::cout << "For Missing Mass cut < " << MMcutvalue << "GeV\n";
+   if (tarName=="Al"){tarName="C";}
+  std::cout << "Selected simc hists: " << Form("%s_%s", tarName.Data(), QVal.Data()) << '\n'; 
+
+std::string MM="sqrt(-H.kin.primary.Q2+pow("+(std::string)Form("%f", MA)+",2)+.139*.139+2*H.kin.primary.nu*"+(std::string)Form("%f", MA)+ "-2*"+Epi+"*"+(std::string)Form("%f", MA)+ "-2*H.kin.primary.nu*"+Epi+"+2*sqrt(H.kin.primary.Q2+pow(H.kin.primary.nu,2))*P.gtr.p*cos(P.kin.secondary.th_xq))";
+ 
+ std::string MMcut="&&(MM<"+(std::string)Form("%f", MMcutvalue)+")";
+ std::string anacutsMM = anacuts+MMcut;
+  
   auto data_rdf_raw = data_rdf.Define("z",z.c_str())
     .Define("ptx",ptx.c_str())
     .Define("pty",pty.c_str())
     .Define("mmpi", calc_mm,
 	    {"H.gtr.px", "H.gtr.py", "H.gtr.pz", "H.gtr.p", "P.gtr.px", "P.gtr.py", "P.gtr.pz", "P.gtr.p"})
-      .Define("MM",MM.c_str());
+    .Define("MM",MM.c_str())
+    .Define("Emiss", calc_em,
+      {"H.gtr.px", "H.gtr.py", "H.gtr.pz", "H.gtr.p", "P.gtr.px", "P.gtr.py", "P.gtr.pz", "P.gtr.p"});
 
  // if (MA < 1.)
  // {anacuts += "&&(MM < 1.05)" ;}
@@ -165,19 +197,24 @@ std::string MM="sqrt(-H.kin.primary.Q2+pow("+(std::string)Form("%f", MA)+",2)+.1
   TString MMsimHist = Form("%s_%s_MM", tarName.Data(), QVal.Data()); 
   TString Q2simHist = Form("%s_%s_Q2", tarName.Data(), QVal.Data()); 
   TString WsimHist = Form("%s_%s_W", tarName.Data(), QVal.Data()); 
+  TString EmsimHist = Form("%s_%s_Em", tarName.Data(), QVal.Data()); 
   TH1F* MMsim = (TH1F*)fsim->Get(MMsimHist); 
   TH1F* Q2sim = (TH1F*)fsim->Get(Q2simHist);
   TH1F* Wsim = (TH1F*)fsim->Get(WsimHist);
+  TH1F* Emsim = (TH1F*)fsim->Get(EmsimHist);
   if (!MMsim) { std::cout << "could not retrieve " << Form("%s_%s_MM", tarName.Data(), QVal.Data()); }
    if (!Q2sim) { std::cout << "could not retrieve " << Form("%s_%s_Q2", tarName.Data(), QVal.Data()); }
     if (!Wsim) { std::cout << "could not retrieve " << Form("%s_%s_W", tarName.Data(), QVal.Data()); }
+     if (!Emsim) { std::cout << "could not retrieve " << Form("%s_%s_Em", tarName.Data(), QVal.Data()); }
   MMsim->SetDirectory(fout); 
   Q2sim->SetDirectory(fout); 
-  Wsim->SetDirectory(fout); 
+  Wsim->SetDirectory(fout);
+  Emsim->SetDirectory(fout);
   //CustomizeHist(MMsim); 
   MMsim->SetLineColor(kBlue);
   Q2sim->SetLineColor(kBlue);
   Wsim->SetLineColor(kBlue);
+  Emsim->SetLineColor(kBlue);
   MMsim->GetXaxis()->CenterTitle();
   fsim->Close();
   fout->cd();
@@ -188,16 +225,27 @@ std::string MM="sqrt(-H.kin.primary.Q2+pow("+(std::string)Form("%f", MA)+",2)+.1
   // Defining histos
   //missing mass 
    std::vector<double> MM_range{200, MA-0.2, MA+1.5};
+   std::vector<double> Em_range{200, 0, 4};
 
   TH1F *hMM = (TH1F*)data_rdf_raw.Filter(anacuts)
     .Histo1D({"MM","",int(MM_range[0]),MM_range[1], MM_range[2]},"MM")->Clone();
   hMM->GetXaxis()->SetTitle("Missing Mass [GeV/c^2]"); 
   TH1F* hMM_norm = (TH1F*)(hMM->Clone());
-  hMM_norm->Scale(1./hMM_norm->Integral()); 
+  hMM_norm->Scale(1./hMM_norm->Integral());
+   TH1F *hEm = (TH1F*)data_rdf_raw.Filter(anacuts)
+    .Histo1D({"Emiss","",int(Em_range[0]),Em_range[1], Em_range[2]},"Emiss")->Clone();
+  hMM->GetXaxis()->SetTitle("Missing Energy [GeV/c^2]"); 
+  TH1F* hEm_norm = (TH1F*)(hEm->Clone());
+  hEm_norm->Scale(1./hEm_norm->Integral());
+	    
   // coin 
   TH1F *hcoin = (TH1F*)data_rdf_raw.Filter(anacuts)
     .Histo1D({"hcoin","",int(hcoin_range[0]),hcoin_range[1],hcoin_range[2]},coinTbranch.c_str())->Clone();
-  hcoin->GetXaxis()->SetTitle("e-#pi Coincidence Time (ns)"); CustomizeHist(hcoin); 
+  hcoin->GetXaxis()->SetTitle("e-#pi Coincidence Time (ns)"); CustomizeHist(hcoin);
+
+ TH1F *hcoin_mmcut = (TH1F*)data_rdf_raw.Filter(anacutsMM)
+    .Histo1D({"hcoin_mmcut","",int(hcoin_range[0]),hcoin_range[1],hcoin_range[2]},coinTbranch.c_str())->Clone();
+  
   // kine
   TH1F *hx = (TH1F*)data_rdf_raw.Filter(anacuts+"&&abs(H.kin.primary.x_bj)<3")
     .Histo1D({"hx","",int(hx_range[0]),hx_range[1],hx_range[2]},"H.kin.primary.x_bj")->Clone();
@@ -239,7 +287,19 @@ std::string MM="sqrt(-H.kin.primary.Q2+pow("+(std::string)Form("%f", MA)+",2)+.1
   h2pbetaVScoin->GetXaxis()->SetTitle("e-#pi Coincidence Time (ns)"); h2pbetaVScoin->GetXaxis()->CenterTitle();  
  
 
-  if(!hMM_norm || !hMM) {std::cout << "could not generate missing mass plot\n"; } 
+// calculating HGC efficiency after applying cut for the hole 
+auto df_geomcut = data_rdf.Define("hgcer_geom_ok",
+    "abs(P.hgcer.xAtCer-1.1) < 7.0 && abs((P.hgcer.xAtCer-1.1)*(P.hgcer.yAtCer-1.33)) < 7.0");
+
+auto matched = df_geomcut.Filter("P.hgcer.numTracksMatched[0]>0 && hgcer_geom_ok");
+auto fired   = df_geomcut.Filter("P.hgcer.numTracksFired[0]>0 && hgcer_geom_ok");
+
+ double eff = (double)*fired.Count() /(double)* matched.Count();
+
+std::cout << "HGC efficiency after applying Hole cut: " << eff << '\n';
+
+
+  //if(!hMM_norm || !hMM) {std::cout << "could not generate missing mass plot\n"; } 
   
   // Plotting and fitting the coin time histo
   TCanvas *ccoin = new TCanvas("ccoin","ccoin",1500,600);
@@ -268,7 +328,7 @@ std::string MM="sqrt(-H.kin.primary.Q2+pow("+(std::string)Form("%f", MA)+",2)+.1
 
   // Extracting the desired counts
   std::vector<double> counts;
-  ExtractCoinEvCounts(hcoin,coincutregion,1,counts);
+  ExtractCoinEvCounts(hcoin_mmcut,coincutregion,1,counts);
   
   // Predicting the # triggers needed to get 100K good coin events
 
@@ -283,7 +343,7 @@ std::string MM="sqrt(-H.kin.primary.Q2+pow("+(std::string)Form("%f", MA)+",2)+.1
   ccoin->cd(2);
   ULong64_t nEntries = *data_rdf.Count();
   //std::cout << nEntries << "\n";
-  TPaveText* pvtxt = CreateSummaryPaveText(rnum, nEntries, anacuts, counts, normyield[0], descoinev, predtrig, sw);
+  TPaveText* pvtxt = CreateSummaryPaveText(rnum, nEntries, anacutsMM, counts, normyield[0], descoinev, charge, predtrig, sw);
   pvtxt->Draw();
   ccoin->Update();
   ccoin->Write("",TObject::kOverwrite);
@@ -294,8 +354,22 @@ std::string MM="sqrt(-H.kin.primary.Q2+pow("+(std::string)Form("%f", MA)+",2)+.1
   gStyle->SetOptStat(1111);
   //
   cphys->cd(1);
-  hx->Draw();
-  hx->Write("",TObject::kOverwrite);
+  //hx->Draw();
+  //hx->Write("",TObject::kOverwrite);
+    
+  hEm_norm->SetStats(0);
+  Emsim->SetStats(0);
+  auto scalefac_o = hEm_norm->GetMaximum()/ Emsim->GetMaximum(); 
+  Emsim->Scale(scalefac_o);
+  hEm_norm->Draw("HIST");
+  Emsim->Draw("HIST SAME"); 
+  auto legendz = new TLegend(0.75, 0.75, 0.89, 0.89);
+  legendz->AddEntry(Emsim, "Simulation", "l");
+  legendz->AddEntry(hEm_norm, "True", "l");
+  legendz->Draw();
+  legendz->Write("",TObject::kOverwrite); 
+  hEm_norm->Write("",TObject::kOverwrite);
+  Emsim->Write("Emsim", TObject::kOverwrite);
   //
   cphys->cd(2);
   hQ2_norm->GetXaxis()->SetRangeUser(0.5, 10);
@@ -824,6 +898,7 @@ TPaveText* CreateSummaryPaveText(int rnum,
 				 const std::vector<double>& counts,
 				 double normyield,
 				 double descoinev,
+         double chrg,
 				 const std::vector<double>& predtrig,
 				 TStopwatch* sw)
 /* Function to create a summary canvas */
@@ -851,10 +926,14 @@ TPaveText* CreateSummaryPaveText(int rnum,
       tmpstr = "";
     }
   }
+  double bgsubcounts = 0.8*counts[2];
+  double bgsubyield = 0.8*normyield;
+
   pvtxt->AddText("Counts:");
   pvtxt->AddText(Form("Number of Real (Randoms Subtracted) Coin Events : %.0f", counts[2]));
   pvtxt->AddText(Form("Charge Normalized and Efficiency Corrected Yield : %.1f (1/mC)", normyield));
-  pvtxt->AddText(Form("Rate of Good Coin Events : %.4f per CODA event", (double)counts[2]/(double)totevintree));
+  pvtxt->AddText(Form("Charge:  %f mC",chrg ));
+  //pvtxt->AddText(Form("Good coin events and rate subtracting a 20% background : %.1f events, %.1f (1/mC)", bgsubcounts, bgsubyield));
   sw->Stop();
   if (is_50k) {
     pvtxt->AddText("Predictions");
@@ -902,10 +981,43 @@ double getMA(TString tarName)
 
 
   if (tarName == "H") {return 0.938272; }
-  if (tarName == "D") {return 1.8756;}
+  if (tarName == "ld2") {return 1.8756;}
   if (tarName == "C") {return 11.178; }
   if (tarName == "Cu") {return 58.618;}
   else {return 0.938272;}
+  
+}
+
+//these cuts may need to be modified!
+//using the 20% background contamination from BeAGLE
+//HSV, 8AUG26
+double getMMCut(TString tarName, TString QVal)
+{
+  if (QVal=="5"){
+    if (tarName == "H") {return 1.05; }
+    if (tarName == "ld2") {return 2.26;}
+    if (tarName == "C") {return 11.73; }
+    if (tarName == "Cu") {return 59.17;}
+  }
+  else if (QVal=="6.5"){
+    if (tarName == "H") {return 1.05; }
+    if (tarName == "ld2") {return 2.29;}
+    if (tarName == "C") {return 11.79; }
+    if (tarName == "Cu") {return 59.24;}
+  }
+  else if (QVal=="7.5"){
+    if (tarName == "H") {return 1.05; }
+    if (tarName == "ld2") {return 2.28;}
+    if (tarName == "C") {return 11.77; }
+    if (tarName == "Cu") {return 59.21;}
+  }
+  else if (QVal=="8.5"){
+    if (tarName == "H") {return 1.05; }
+    if (tarName == "ld2") {return 2.27;}
+    if (tarName == "C") {return 11.75; }
+    if (tarName == "Cu") {return 59.2;}
+  }
+  else {return 100.0;}
   
 }
 /* extra stuff 

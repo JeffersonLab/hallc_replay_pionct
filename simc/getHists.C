@@ -10,6 +10,7 @@ void getHists(){
     range<float> trgRange[4] = {{0.8, 1.4}, {1.8, 3.2}, {11, 13.2}, {58, 61}};
     range<float> Q2Range = {0.0, 10.0}; 
     range<float> WRange = {0.5,4};
+    range<float> EmRange = {0, 4};
 
     double normFacs[4][4] = {
         {0.529333E+08  ,0.698070E+08 , 0.901831E+08 ,0.107940E+09   }, 
@@ -24,9 +25,10 @@ void getHists(){
     TH1F* histsW[4][4]    = {nullptr};
     TH1F* hists[4][4]= {nullptr}; 
     TH1F* histsQ2[4][4]   = {nullptr};
+    TH1F* histsEm[4][4] = {nullptr};
 
     TFile* fsim[4][4] ={nullptr}; 
-    TFile* fout = new TFile("allhists.root", "RECREATE"); 
+    TFile* fout = new TFile("simHists.root", "RECREATE"); 
     TString root_dir = "simc_root_files/"; 
 
     // now have a for loop of 16 iterations, for each iteration open the root file, and get the MM histogram and save it in a root file. 
@@ -52,6 +54,9 @@ void getHists(){
               histsW[i][j] = new TH1F(Form("%s_%s_W", trg[i].Data(), QVals[j].Data()),
                 Form("%s - Q2 = %s;W;Counts", trg[i].Data(), QVals[j].Data()),
                 400, WRange.GetMin(), WRange.GetMax());
+	       histsEm[i][j] = new TH1F(Form("%s_%s_Em", trg[i].Data(), QVals[j].Data()),
+                Form("%s - Q2 = %s;Em;Counts", trg[i].Data(), QVals[j].Data()),
+                400, EmRange.GetMin(), EmRange.GetMax());
 
              // now need to loop over the entries of the tree 
 
@@ -62,15 +67,19 @@ void getHists(){
                 hists[i][j]->Fill(mmnuc, Weight * normFacs[i][j] / 50000); 
                 histsQ2[i][j]->Fill(Q2, Weight * normFacs[i][j] / 50000);
                 histsW[i][j]->Fill(W, Weight * normFacs[i][j] / 50000);
+		histsEm[i][j]->Fill(Em, Weight * normFacs[i][j] / 50000);
+		
              }
             hists[i][j]->SetDirectory(fout); 
             histsQ2[i][j]->SetDirectory(fout);
             histsW[i][j]->SetDirectory(fout);
+	    histsW[i][j]->SetDirectory(fout);
             fout->cd(); 
             hists[i][j]->SetName(Form("%s_%s_MM", trg[i].Data(), QVals[j].Data())); 
             hists[i][j]->Write(Form("%s_%s_MM", trg[i].Data(), QVals[j].Data()), TObject::kOverwrite);
             histsQ2[i][j]->Write(histsQ2[i][j]->GetName(), TObject::kOverwrite);
             histsW[i][j]->Write(histsW[i][j]->GetName(), TObject::kOverwrite);
+	    histsEm[i][j]->Write(histsEm[i][j]->GetName(), TObject::kOverwrite);
             fsim[i][j]->Close(); 
 
         }

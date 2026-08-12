@@ -21,7 +21,8 @@ void replay_production_shms_coin (Int_t RunNumber = 0, Int_t MaxEvent = 0,
   // Create file name patterns.
   // const char* RunFileNamePattern = "shms_all_%05d.dat";
   // const char* RunFileNamePattern = "lad_Production_%05d.dat.0";
-  const char* RunFileNamePattern = "rsidis_production_%05d.dat.%u";      
+  //const char* RunFileNamePattern = "rsidis_production_%05d.dat.%u";
+  const char* RunFileNamePattern = "pionct_production_%05d.dat.%u"; 
   vector<string> pathList;
   pathList.push_back(".");
   pathList.push_back("./raw");
@@ -58,8 +59,8 @@ void replay_production_shms_coin (Int_t RunNumber = 0, Int_t MaxEvent = 0,
   SHMS->AddEvtType(7);
   gHaApps->Add(SHMS);
   // Add Noble Gas Cherenkov to SHMS apparatus
-  THcCherenkov* ngcer = new THcCherenkov("ngcer", "Noble Gas Cherenkov");
-  SHMS->AddDetector(ngcer);
+  //THcCherenkov* ngcer = new THcCherenkov("ngcer", "Noble Gas Cherenkov");
+  // SHMS->AddDetector(ngcer);
   // Add drift chambers to SHMS apparatus
   THcDC* dc = new THcDC("dc", "Drift Chambers");
   SHMS->AddDetector(dc);

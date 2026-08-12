@@ -106,6 +106,24 @@ hydra_configs=(
     ${configshms}
 )
 
+
+pids=()
+
+cleanup()
+{
+    echo
+    echo "[INTERRUPT] Stopping background jobs..."
+
+    if ((${#pids[@]})); then
+        kill -TERM "${pids[@]}" 2>/dev/null
+        wait "${pids[@]}" 2>/dev/null
+    fi
+
+    exit 130
+}
+
+trap cleanup INT TERM
+
 # Start analysis and monitoring plots.
 {
   echo ""
