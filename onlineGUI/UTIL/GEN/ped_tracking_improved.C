@@ -1,6 +1,8 @@
 #include "TFile.h"
 #include "TH1D.h"
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
 void ped_tracking_improved(TString golden_file = "", TString detector = "",
                            TString spect = "", Double_t polarity = 0) {
@@ -79,28 +81,28 @@ void ped_tracking_improved(TString golden_file = "", TString detector = "",
 
   gDirectory->cd(Form("%s", protorootpath.Data()));
 
-  TH1D* H1_pmt;
-  TH1D* H2_pmt;
-
-  H1_pmt = (TH1D*)H1_ped_vs_pmt->ProjectionX("H1_pmt", 1,
+  auto* H1_pmt = (TH1D*)H1_ped_vs_pmt->ProjectionX("H1_pmt", 1,
                                              H1_ped_vs_pmt->GetSize() - 2);
-  H2_pmt = (TH1D*)H2_ped_vs_pmt->ProjectionX("H2_pmt", 1,
+  auto* H2_pmt = (TH1D*)H2_ped_vs_pmt->ProjectionX("H2_pmt", 1,
                                              H2_ped_vs_pmt->GetSize() - 2);
 
-  TH1D* H1_ped[H1_pmt->GetSize() - 2];
-  TH1D* H2_ped[H2_pmt->GetSize() - 2];
+  Int_t nh1 = H1_pmt->GetSize() - 2, nh2 = H2_pmt->GetSize() - 2;
+  if( nh1 <= 0 || nh2 <= 0 )
+    return;
+  Int_t N = std::min(nh1,nh2);
 
-  for (Int_t ipmt = 0; ipmt < (H1_pmt->GetSize() - 2); ipmt++) {
-    H1_ped[ipmt] = (TH1D*)H1_ped_vs_pmt->ProjectionY(
-        Form("H1_ped_pmt%d", ipmt + 1), ipmt + 1, ipmt + 1);
-    H2_ped[ipmt] = (TH1D*)H2_ped_vs_pmt->ProjectionY(
-        Form("H2_ped_pmt%d", ipmt + 1), ipmt + 1, ipmt + 1);
+  auto* H1_ped = new TH1D*[N];
+  auto* H2_ped = new TH1D*[N];
+  //  vector<TH1D*> H1_ped(N), H2_ped(N); // Modern cling chokes on this
+  for (Int_t ipmt = 0; ipmt < N; ipmt++) {
+    H1_ped[ipmt] = (TH1D*)H1_ped_vs_pmt->
+      ProjectionY( Form("H1_ped_pmt%d", ipmt + 1), ipmt + 1, ipmt + 1);
+    H2_ped[ipmt] = (TH1D*)H2_ped_vs_pmt->
+      ProjectionY( Form("H2_ped_pmt%d", ipmt + 1), ipmt + 1, ipmt + 1);
   }
 
-  Double_t H1_ped_peak[H1_pmt->GetSize() - 2];
-  Double_t H2_ped_peak[H2_pmt->GetSize() - 2];
-  for (Int_t ipmt = 0; ipmt < (H1_pmt->GetSize() - 2); ipmt++) {
-
+  vector<Double_t> H1_ped_peak(N), H2_ped_peak(N);
+  for (Int_t ipmt = 0; ipmt < N; ipmt++) {
     if (H1_ped[ipmt]->GetEntries() > 25) {
       TSpectrum* s = new TSpectrum(1);
       gSystem->RedirectOutput("/dev/null", "a");
@@ -139,7 +141,7 @@ void ped_tracking_improved(TString golden_file = "", TString detector = "",
   Gaussian->SetParLimits(0, 0, 1000);
   Gaussian->SetParLimits(2, 0, 2);
 
-  for (Int_t ipmt = 0; ipmt < (H1_pmt->GetSize() - 2); ipmt++) {
+  for (Int_t ipmt = 0; ipmt < N; ipmt++) {
     Gaussian->SetParameter(1, H1_ped_peak[ipmt]);
     gSystem->RedirectOutput("/dev/null", "a");
     H1_ped[ipmt]->Fit(Gaussian, "QMN");
@@ -159,16 +161,16 @@ void ped_tracking_improved(TString golden_file = "", TString detector = "",
       new TH1D("Ped_Difference",
                Form("%s %s;PMT Number;  (Golden - Present) Pedestal Mean (mV)",
                     detector.Data(), (polarity == 1) ? "+" : "-"),
-               (H1_pmt->GetSize() - 2), 0.5, (H1_pmt->GetSize() - 2) + 0.5);
+               N, 0.5, N + 0.5);
   TH1D* Ped_Difference_Zero =
       new TH1D("Ped_Difference_Zero",
                Form("%s %s;PMT Number;  (Golden - Present) Pedestal Mean (mV)",
                     detector.Data(), (polarity == 1) ? "+" : "-"),
-               (H1_pmt->GetSize() - 2), 0.5, (H1_pmt->GetSize() - 2) + 0.5);
+               N, 0.5, N + 0.5);
   gSystem->RedirectOutput(0);
 
   Double_t histmaxdiff = 0.;
-  for (Int_t ipmt = 0; ipmt < (H1_pmt->GetSize() - 2); ipmt++) {
+  for (Int_t ipmt = 0; ipmt < N; ipmt++) {
     Double_t peddiff =
         (H1_pmt->GetBinContent(ipmt + 1) - H2_pmt->GetBinContent(ipmt + 1));
     if (TMath::Abs(peddiff) == 1e+38) {
@@ -222,4 +224,6 @@ void ped_tracking_improved(TString golden_file = "", TString detector = "",
 
   delete Ped_Difference;
   delete Ped_Difference_Zero;
+  delete [] H1_ped;
+  delete [] H2_ped;
 }
