@@ -75,7 +75,7 @@ double getMMCut(TString tarName, TString QVal);
 bool is_50k = false;
 
 // Main function
-int get_good_coin_ev(int rnum,                 // Run number to analyze
+int get_good_coin_ev_holly(int rnum,                 // Run number to analyze
 		     int nevent=-1,            // # of events replayed
 		     double descoinev=100000., // desired number of real coin events
 		     std::string indirroot="ROOTfiles", // Path to directory containing input ROOT file
@@ -173,8 +173,6 @@ std::string MM="sqrt(-H.kin.primary.Q2+pow("+(std::string)Form("%f", MA)+",2)+.1
  std::string hgcer_geom_cut = "&&!(abs(P.hgcer.xAtCer-1.1)<7&&abs((P.hgcer.xAtCer-1.1)*(P.hgcer.yAtCer-1.33))<7)";
 
  std::string anacutsMM = anacuts+MMcut+hgcer_geom_cut;
- std::string hgcer_geom_effcut = "P.aero.npeSum>2&&H.cer.npeSum>2&&H.cal.etottracknorm>0.7&&P.cal.etottracknorm<0.8&&abs(P.gtr.dp-5.)<15.&&abs(H.gtr.dp)<8."+MMcut+hgcer_geom_cut;
- 
   
   auto data_rdf_raw = data_rdf.Define("z",z.c_str())
     .Define("ptx",ptx.c_str())
@@ -188,8 +186,8 @@ std::string MM="sqrt(-H.kin.primary.Q2+pow("+(std::string)Form("%f", MA)+",2)+.1
 
 // ---- HGC geometry cut + efficiency calculation ----
 
-  auto hgcer_matched = data_rdf_raw.Filter(("P.hgcer.totNumTracksMatched>0 && " + hgcer_geom_effcut).c_str());
-  auto hgcer_fired   = data_rdf_raw.Filter(("P.hgcer.totNumTracksFired>0 && "  + hgcer_geom_effcut).c_str());
+  auto hgcer_matched = data_rdf_raw.Filter(("P.hgcer.totNumTracksMatched>0 && " + anacutsMM).c_str());
+  auto hgcer_fired   = data_rdf_raw.Filter(("P.hgcer.totNumTracksFired>0 && "  + anacutsMM).c_str());
 
   double nMatched = *hgcer_matched.Count();
   double nFired   = *hgcer_fired.Count();

@@ -11,6 +11,7 @@ pcut_cal_pi            	  P.cal.etracknorm <= 0.6 && P.cal.etracknorm > 0.
 pcut_elec_all          	  pcut_cer_ng_elec && pcut_cer_hg_elec && pcut_cal_elec
 pcut_pi_all            	  pcut_cer_ng_pi && pcut_cer_hg_pi && pcut_cal_pi
 
+
 shmsScinGood        P.hod.goodscinhit == 1
 shmsGoodBetanotrk   P.hod.betanotrack > 0.5 && P.hod.betanotrack < 1.4
 
@@ -72,27 +73,7 @@ pcut_goods2y      P.hod.2y.nhits > 0 && P.hod.2y.nhits < 3
 pcut_goods2       pcut_goods2x && pcut_goods2y
 pcut_goods1s2     pcut_goods1 && pcut_goods2
 
-SHMS_hgcer_track_matched_region_1 P.hgcer.numTracksMatched[0]>0
-SHMS_hgcer_track_fired_region_1 P.hgcer.numTracksFired[0]>0
-SHMS_hgcer_track_matched_region_2 P.hgcer.numTracksMatched[1]>0
-SHMS_hgcer_track_fired_region_2 P.hgcer.numTracksFired[1]>0
-SHMS_hgcer_track_matched_region_3 P.hgcer.numTracksMatched[2]>0
-SHMS_hgcer_track_fired_region_3 P.hgcer.numTracksFired[2]>0
-SHMS_hgcer_track_matched_region_4 P.hgcer.numTracksMatched[3]>0
-SHMS_hgcer_track_fired_region_4 P.hgcer.numTracksFired[3]>0
-SHMS_hgcer_track_matched_tot P.hgcer.totNumTracksMatched>0
-SHMS_hgcer_track_fired_tot P.hgcer.totNumTracksFired>0
 
-SHMS_ngcer_track_matched_region_1 P.ngcer.numTracksMatched[0]>0
-SHMS_ngcer_track_fired_region_1 P.ngcer.numTracksFired[0]>0
-SHMS_ngcer_track_matched_region_2 P.ngcer.numTracksMatched[1]>0
-SHMS_ngcer_track_fired_region_2 P.ngcer.numTracksFired[1]>0
-SHMS_ngcer_track_matched_region_3 P.ngcer.numTracksMatched[2]>0
-SHMS_ngcer_track_fired_region_3 P.ngcer.numTracksFired[2]>0
-SHMS_ngcer_track_matched_region_4 P.ngcer.numTracksMatched[3]>0
-SHMS_ngcer_track_fired_region_4 P.ngcer.numTracksFired[3]>0
-SHMS_ngcer_track_matched_tot P.ngcer.totNumTracksMatched>0
-SHMS_ngcer_track_fired_tot P.ngcer.totNumTracksFired>0
 
 SHMS_aero_track_matched_region_1 P.aero.numTracksMatched[0]>0
 SHMS_aero_track_fired_region_1 P.aero.numTracksFired[0]>0

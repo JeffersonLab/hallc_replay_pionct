@@ -10,3 +10,16 @@ pcut_CleanTrack_cer_elec     (P.gtr.index > -1) && pcut_cer_elec_both
 pcut_p1hit1_cer_elec	     p1hit1 && pcut_cer_elec_both
 pcut_CleanTrack_cal_elec     (P.gtr.index > -1) && pcut_cal_elec
 pcut_p1hit1_cal_elec         p1hit1 && pcut_cal_elec
+
+pcut_hgcer                P.aero.npeSum>2.&&P.cal.etottracknorm<0.8&&abs(P.gtr.dp-5.)<15.&&!(abs(P.hgcer.xAtCer-1.1)<7&&abs((P.hgcer.xAtCer-1.1)*(P.hgcer.yAtCer-1.33))<7)
+
+SHMS_hgcer_track_matched_region_1 P.hgcer.numTracksMatched[0]>0&&pcut_hgcer
+SHMS_hgcer_track_fired_region_1 P.hgcer.numTracksFired[0]>0&&pcut_hgcer
+SHMS_hgcer_track_matched_region_2 P.hgcer.numTracksMatched[1]>0&&pcut_hgcer
+SHMS_hgcer_track_fired_region_2 P.hgcer.numTracksFired[1]>0&&pcut_hgcer
+SHMS_hgcer_track_matched_region_3 P.hgcer.numTracksMatched[2]>0&&pcut_hgcer
+SHMS_hgcer_track_fired_region_3 P.hgcer.numTracksFired[2]>0&&pcut_hgcer
+SHMS_hgcer_track_matched_region_4 P.hgcer.numTracksMatched[3]>0&&pcut_hgcer
+SHMS_hgcer_track_fired_region_4 P.hgcer.numTracksFired[3]>0&&pcut_hgcer
+SHMS_hgcer_track_matched_tot P.hgcer.totNumTracksMatched>0&&pcut_hgcer
+SHMS_hgcer_track_fired_tot P.hgcer.totNumTracksFired>0&&pcut_hgcer

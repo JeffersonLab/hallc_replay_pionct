@@ -1,0 +1,458 @@
+
+:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=
+
+Thu Aug 13 09:02:46 PM EDT 2026
+
+Running COIN COIN analysis on the run 29079:
+ -> SCRIPT:  SCRIPTS/COIN/PRODUCTION/replay_production_coin_hElec_pProt.C
+ -> RUN:     29079
+ -> NEVENTS: 100
+ -> COMMAND: hcana -q "SCRIPTS/COIN/PRODUCTION/replay_production_coin_hElec_pProt.C(29079, 100)"
+
+:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=
+DB_DIR set to DBASE
+Reading startup commands from /home/cdaq/.root/rootlogon.C
+  ************************************************
+  *                                              *
+  *            W E L C O M E  to  the            *
+  *          H A L L C ++  A N A L Y Z E R       *
+  *                                              *
+  *  hcana release          1.5      10 Aug 2026 *
+  *  PODD release        1.7.19      10 Mar 2026 *
+  *  ROOT               6.36.04      Aug 25 2025 *
+  *                                              *
+  *            For information visit             *
+  *      http://hallcweb.jlab.org/hcana/docs/    *
+  *                                              *
+  ************************************************
+
+Processing SCRIPTS/COIN/PRODUCTION/replay_production_coin_hElec_pProt.C(29079, 100)...
+Opening parameter file: [0] DBASE/COIN/standard.database
+Reading Parameters for run 29079
+Opening parameter file: [0] DBASE/COIN/general_rsidis_phaseII.param
+Opening parameter file: [1] PARAM/GEN/genflags.param
+Opening parameter file: [1] PARAM/GEN/gdebug.param
+Opening parameter file: [1] PARAM/GEN/gtarget.param
+Opening parameter file: [1] PARAM/GEN/gbeam.param
+Opening parameter file: [1] PARAM/GEN/gscalers.param
+Opening parameter file: [1] PARAM/HMS/GEN/hcana.param
+Opening parameter file: [1] PARAM/HMS/GEN/hdebug.param
+Opening parameter file: [1] PARAM/HMS/GEN/hmsflags.param
+Opening parameter file: [1] PARAM/HMS/GEN/htracking.param
+Opening parameter file: [1] PARAM/HMS/GEN/h_reftime_cut_coindaq_phaseII.param
+Opening parameter file: [1] PARAM/HMS/CER/hcer_geom.param
+Opening parameter file: [1] PARAM/HMS/DC/hdc_newalign_geom.param
+Opening parameter file: [1] PARAM/HMS/HODO/hhodo_geom.param
+Opening parameter file: [1] PARAM/HMS/AERO/haero_geom.param
+Opening parameter file: [1] PARAM/HMS/CAL/hcal_geom.param
+Opening parameter file: [1] PARAM/HMS/CER/hcer_cuts.param
+Opening parameter file: [1] PARAM/HMS/DC/hdc_cuts.param
+Opening parameter file: [1] PARAM/HMS/HODO/hhodo_cuts.param
+Opening parameter file: [1] PARAM/HMS/AERO/haero_cuts.param
+Opening parameter file: [1] PARAM/HMS/CAL/hcal_cuts.param
+Opening parameter file: [1] PARAM/HMS/CER/hcer_calib_phaseII.param
+Opening parameter file: [1] PARAM/HMS/DC/hdc_calib_rsidis.param
+Opening parameter file: [1] PARAM/HMS/DC/hdc_tzero_per_wire_rsidis.param
+Opening parameter file: [1] PARAM/HMS/HODO/hhodo_calib.param
+Opening parameter file: [1] PARAM/HMS/HODO/hhodo_TWcalib_rsidis.param
+Opening parameter file: [1] PARAM/HMS/HODO/hhodo_Vpcalib_rsidis.param
+Opening parameter file: [1] PARAM/HMS/AERO/haero_calib.param
+Opening parameter file: [1] PARAM/SHMS/GEN/pcana.param
+Opening parameter file: [1] PARAM/SHMS/GEN/pdebug.param
+Opening parameter file: [1] PARAM/SHMS/GEN/shmsflags.param
+Opening parameter file: [1] PARAM/SHMS/GEN/ptracking.param
+Opening parameter file: [1] PARAM/SHMS/GEN/p_reftime_cut_phaseII.param
+Opening parameter file: [1] PARAM/SHMS/NGCER/pngcer_geom.param
+Opening parameter file: [1] PARAM/SHMS/DC/pdc_newalign_geom.param
+Opening parameter file: [1] PARAM/SHMS/HODO/phodo_geom.param
+Opening parameter file: [1] PARAM/SHMS/HGCER/phgcer_geom.param
+Opening parameter file: [1] PARAM/SHMS/AERO/paero_geom.param
+Opening parameter file: [1] PARAM/SHMS/CAL/pcal_geom.param
+Opening parameter file: [1] PARAM/SHMS/NGCER/pngcer_cuts.param
+Opening parameter file: [1] PARAM/SHMS/DC/pdc_cuts_phaseII.param
+Opening parameter file: [1] PARAM/SHMS/HODO/phodo_cuts_phaseII.param
+Opening parameter file: [1] PARAM/SHMS/HGCER/phgcer_cuts.param
+Opening parameter file: [1] PARAM/SHMS/AERO/paero_cuts.param
+Opening parameter file: [1] PARAM/SHMS/CAL/pcal_cuts_phaseII.param
+Opening parameter file: [1] PARAM/SHMS/NGCER/pngcer_calib_rsidis.param
+Opening parameter file: [1] PARAM/SHMS/DC/pdc_calib_rsidis.param
+Opening parameter file: [1] PARAM/SHMS/DC/pdc_tzero_per_wire_rsidis.param
+Opening parameter file: [1] PARAM/SHMS/HODO/phodo_calib.param
+Opening parameter file: [1] PARAM/SHMS/HODO/phodo_TWcalib_rsidis.param
+Opening parameter file: [1] PARAM/SHMS/HODO/phodo_Vpcalib_rsidis.param
+Opening parameter file: [1] PARAM/SHMS/HGCER/phgcer_calib_phaseII.param
+Opening parameter file: [1] PARAM/SHMS/AERO/paero_calib_rsidis_phaseII.param
+Opening parameter file: [0] DBASE/COIN/standard.kinematics
+Reading Parameters for run 29079
+Opening parameter file: [0] PARAM/SHMS/CAL/RSIDIS_PHASEII/pcal_calib_5p154gev_5pass.param
+Opening parameter file: [0] PARAM/HMS/CAL/RSIDIS_PHASEII/hcal_calib_5p343gev_5pass.param
+Opening parameter file: [0] PARAM/TRIG/tcoin_phaseII.param
+Opening parameter file: [0] PARAM/HMS/GEN/h_fadc_debug.param
+Opening parameter file: [0] PARAM/SHMS/GEN/p_fadc_debug.param
+
+ Detector ID Map
+
+   HDC 11
+   HSCIN 13
+   HCER 14
+   HCAL 15
+   HRASTER 18
+   PNGCER 21
+   PDC 22
+   PSCIN 23
+   PHGCER 24
+   PAERO 25
+   PCAL 26
+   PRASTER 28
+   TCOIN 30
+
+codafilename = pionct_production_29079.dat.0
+Segment 1 file pionct_production_29079.dat.1 not found. Finished building input file list.
+Podd::MultiFileRun  "uninitialized run"
+Run number:   0
+Run date:     Sun Jan  1 00:00:00 1995
+Data version: 0
+Requested event range: 1-100
+Analyzed events:       0
+Assume Date:           0
+Database read:         0
+Initialized:           0
+Opened:                0
+Date set/read/req:     0 0 1
+Run num set/read/req:  0 0 1
+Run type set/read/req: 0 0 1
+Prescales set/rd/req:  0 0 0
+DAQInfo set/rd/req:    0 0 0
+Search paths:
+  .
+  ./raw
+  ./raw/../raw.copiedtotape
+  ./cache
+File name:   pionct_production_29079.dat.0
+Initializing run object
+MultiFileRun: 1 file in 1 stream
+Prestart at 1
+DAQ info at 37 len 4931
+DAQ info at 39 len 3393
+DAQ info at 44 len 4317
+Overwriting existing output file: ROOTfiles/coin_replay_production_29079_100.root
+Info in <THaCrateMap::init(tloc)>: Opened database file MAPS/db_cratemap.dat
+Podd::MultiFileRun  "RUN_29079"
+Run number:   29079
+Run date:     Thu Aug 13 09:36:31 2026
+Data version: 3
+Requested event range: 1-100
+Search paths:
+  .
+  ./raw
+  ./raw/../raw.copiedtotape
+  ./cache
+File name:   pionct_production_29079.dat.0
+Default stream: 
+  ./raw/pionct_production_29079.dat.0
+Initializing analysis objects
+Initializing P
+In THcHallCSpectrometer::ReadDatabase()
+ GetName() P
+p From Formula Mispointing_y = -0.06
+p From Formula Mispointing_x = -0.126
+
+
+
+hodo planes = 4
+sel using scin = 0
+fPruneXp = 0.2
+fPruneYp = 0.2
+fPruneYtar = 20
+fPruneDelta = 30
+fPruneBeta = 30
+fPruneDf = 1
+fPruneChiBeta = 100
+fPruneFpTime = 1000
+fPruneNPMT = 6
+sel using prune = 1
+fPartMass = 0.139
+fPcentral = 7.784 -0.4
+fThetalab = 9.06 0
+Read 131 matrix element terms
+Plane Name List: 1u1 1u2 1x1 1x2 1v1 1v2 2v2 2v1 2x2 2x1 2u2 2u1
+Drift Chambers: 12 planes in 2 chambers
+Created Drift Chamber 1, Ch1
+Created Drift Chamber 2, Ch2
+ DC tdc ref time cut = -18950
+InitHitList: THcRawDCHit RefTimeCuts: -18950 0
+THcHitList::InitHitList : Prestart event 137 not found.
+Defining pdc_tdcref_miss and pdc_adcref_miss
+*** WARNING!!!  Rounded pdc_tdc_min_win elements to nearest integer 
+*** WARNING!!!  Rounded pdc_tdc_max_win elements to nearest integer 
+*** WARNING!!!  Rounded pUseNewLinkStubs to nearest integer 
+Plane counts: 107 107 79 79 107 107 107 107 79 79 107 107
+Plane Name List : 1x 1y 2x 2y
+Created Scintillator Plane 1x, Hodoscope Plane 1x
+Created Scintillator Plane 1y, Hodoscope Plane 1y
+Created Scintillator Plane 2x, Hodoscope Plane 2x
+Created Scintillator Plane 2y, Hodoscope Plane 2y
+ Hodo tdc ref time cut = -7850 -4500
+InitHitList: THcRawHodoHit RefTimeCuts: -7850 -4500
+THcHitList::InitHitList : Prestart event 137 not found.
+Defining pscin_tdcref_miss and pscin_adcref_miss
+USING 2.5 NSEC WINDOW FOR FP NO_TRACK CALCULATIONS.
+ fRatio_xpfp_to_xfp= 0.0018
+Defining phgcer_tdcref_miss and phgcer_adcref_miss
+Created Cherenkov detector P.hgcer with 4 PMTs
+ fSampThreshold 1 = 5
+ fSampThreshold = 5
+InitHitList: THcCherenkovHit RefTimeCuts: 0 -4500
+THcHitList::InitHitList : Prestart event 137 not found.
+Defining paero_tdcref_miss and paero_adcref_miss
+Created aerogel detector P.aero with 7 PMT pairs
+InitHitList: THcAerogelHit RefTimeCuts: 0 -4500
+THcHitList::InitHitList : Prestart event 137 not found.
+From THcShower::Setup: created Shower planes for P: pr, fly.
+InitHitList: THcRawShowerHit RefTimeCuts: 0 -4500
+THcHitList::InitHitList : Prestart event 137 not found.
+Defining pcal_tdcref_miss and pcal_adcref_miss
+THcShowerPlane::DefineVariables: registered counters P.cal.stat_trksum1 and P.cal.stat_hitsum1
+ fSampThreshold 1 = 5
+Initializing P.rb
+InitHitList: THcRasterRawHit RefTimeCuts: 0 0
+THcHitList::InitHitList : Prestart event 137 not found.
+ THcRaster is using EPICS bpm for beam position
+Initializing H
+In THcHallCSpectrometer::ReadDatabase()
+ GetName() H
+h From Formula Mispointing_x = 0.0877604
+
+
+
+hodo planes = 4
+sel using scin = 0
+fPruneXp = 0.2
+fPruneYp = 0.2
+fPruneYtar = 20
+fPruneDelta = 30
+fPruneBeta = 30
+fPruneDf = 1
+fPruneChiBeta = 100
+fPruneFpTime = 1000
+fPruneNPMT = 6
+sel using prune = 1
+fPartMass = 0.000511
+fPcentral = 2.707 0
+fThetalab = -29.48 0
+Read 461 matrix element terms
+Plane Name List: 1u1 1u2 1x1 1x2 1v2 1v1 2v1 2v2 2x2 2x1 2u2 2u1
+Drift Chambers: 12 planes in 2 chambers
+Created Drift Chamber 1, Ch1
+Created Drift Chamber 2, Ch2
+ DC tdc ref time cut = -18400
+InitHitList: THcRawDCHit RefTimeCuts: -18400 0
+THcHitList::InitHitList : Prestart event 137 not found.
+Defining hdc_tdcref_miss and hdc_adcref_miss
+*** WARNING!!!  Rounded hdc_tdc_min_win elements to nearest integer 
+*** WARNING!!!  Rounded hdc_tdc_max_win elements to nearest integer 
+*** WARNING!!!  Rounded hUseNewLinkStubs to nearest integer 
+Plane counts: 96 96 102 102 96 96 96 96 102 102 96 96
+Plane Name List : 1x 1y 2x 2y
+Created Scintillator Plane 1x, Hodoscope Plane 1x
+Created Scintillator Plane 1y, Hodoscope Plane 1y
+Created Scintillator Plane 2x, Hodoscope Plane 2x
+Created Scintillator Plane 2y, Hodoscope Plane 2y
+ Hodo tdc ref time cut = -5500 -2600
+InitHitList: THcRawHodoHit RefTimeCuts: -5500 -2600
+THcHitList::InitHitList : Prestart event 137 not found.
+Defining hscin_tdcref_miss and hscin_adcref_miss
+USING 2 NSEC WINDOW FOR FP NO_TRACK CALCULATIONS.
+ fRatio_xpfp_to_xfp= 0.0011
+Defining hcer_tdcref_miss and hcer_adcref_miss
+Created Cherenkov detector H.cer with 2 PMTs
+ fSampThreshold 1 = 5
+ fSampThreshold = 5
+InitHitList: THcCherenkovHit RefTimeCuts: 0 -2600
+THcHitList::InitHitList : Prestart event 137 not found.
+*** WARNING!!!  Rounded hcal_adcrefcut to nearest integer 
+From THcShower::Setup: created Shower planes for H: 1pr, 2ta, 3ta, 4ta.
+InitHitList: THcRawShowerHit RefTimeCuts: 0 -2600
+THcHitList::InitHitList : Prestart event 137 not found.
+Defining hcal_tdcref_miss and hcal_adcref_miss
+THcShowerPlane::DefineVariables: registered counters H.cal.stat_trksum1 and H.cal.stat_hitsum1
+THcShowerPlane::DefineVariables: registered counters H.cal.stat_trksum2 and H.cal.stat_hitsum2
+THcShowerPlane::DefineVariables: registered counters H.cal.stat_trksum3 and H.cal.stat_hitsum3
+THcShowerPlane::DefineVariables: registered counters H.cal.stat_trksum4 and H.cal.stat_hitsum4
+Initializing H.rb
+InitHitList: THcRasterRawHit RefTimeCuts: 0 0
+THcHitList::InitHitList : Prestart event 137 not found.
+ THcRaster is using EPICS bpm for beam position
+Initializing T
+ Trig = 4
+pTRIG1_ROC1 27
+pTRIG3_ROC1 29
+pTRIG1_ROC2 58
+pTRIG3_ROC2 60
+pRF 112
+hRF 111
+*** WARNING!!!  Rounded t_coin_trig_tdcrefcut to nearest integer 
+*** WARNING!!!  Rounded t_coin_trig_adcrefcut to nearest integer 
+InitHitList: THcTrigRawHit RefTimeCuts: -7850 -4500
+THcHitList::InitHitList : Prestart event 137 not found.
+Defining t_coin_tdcref_miss and t_coin_adcref_miss
+In THcHelicity::ReadDatabase
+THcHelicityReader: Helicity information from ROC 2 (SHMS)
+Helicity decoder initialized with frequency of 29.5596 Hz and reporting delay of 8 cycles.
+Called THcHelicity::DefineVariables with mode == 0
+Calling THcHelicity DefineVarsFromList
+Initializing P.react
+Initializing P.extcor
+In THcExtTarCor::ReadDatabase()
+Initializing P.gtr
+Initializing phodeff
+
+
+THcHodoEff::ReadDatabase nplanes=4
+Plane = 1    counters = 13
+Plane = 2    counters = 13
+Plane = 3    counters = 14
+Plane = 4    counters = 21
+THcHodoEff::Init nplanes=4
+THcHodoEff::Init Apparatus = hod P
+Initializing H.react
+Initializing H.extcor
+In THcExtTarCor::ReadDatabase()
+Initializing H.gtr
+Initializing hhodeff
+
+
+THcHodoEff::ReadDatabase nplanes=4
+Plane = 1    counters = 16
+Plane = 2    counters = 10
+Plane = 3    counters = 16
+Plane = 4    counters = 10
+THcHodoEff::Init nplanes=4
+THcHodoEff::Init Apparatus = hod H
+Initializing H.kin.primary
+In THcPrimaryKine::ReadDatabase()
+Initializing P.kin.secondary
+THcSecondaryKine particleMASS: 0.139
+Initializing CTime
+*************************************************
+Initializing THcCointTime Physics Modue
+Hadron Arm   -------> P
+Electron Arm -------> H
+TrigDet  -------> T.coin
+**************************************************
+Initializing epics
+Initializing P
+Howdy !  We are initializing THcScalerEvtHandler !!   name =   P
+Setting scaler clock ... channel = 31 ... freq = 1e+06
+Initializing P
+fHelicityCycleOffset= 3
+Howdy !  We are initializing THcHelicityScaler !!   name =   P
+Setting scaler clock ... channel = 8 ... freq = 1e+06
+Warning in <THaVarList::DefineByType>: Variable P.Empty.scaler already exists. Not redefined.
+Warning in <THaVarList::DefineByType>: Variable P.Empty.scalerCut already exists. Not redefined.
+Warning in <THaVarList::DefineByType>: Variable P.Empty.scalerRate already exists. Not redefined.
+Warning in <THaVarList::DefineByType>: Variable P.Empty_2.scaler already exists. Not redefined.
+Warning in <THaVarList::DefineByType>: Variable P.Empty_2.scalerCut already exists. Not redefined.
+Warning in <THaVarList::DefineByType>: Variable P.Empty_2.scalerRate already exists. Not redefined.
+Initializing H
+Howdy !  We are initializing THcScalerEvtHandler !!   name =   H
+Setting scaler clock ... channel = 31 ... freq = 1e+06
+Initializing H
+fHelicityCycleOffset= 3
+Howdy !  We are initializing THcHelicityScaler !!   name =   H
+Setting scaler clock ... channel = 8 ... freq = 1e+06
+Warning in <THaVarList::DefineByType>: Variable H.Empty.scaler already exists. Not redefined.
+Warning in <THaVarList::DefineByType>: Variable H.Empty.scalerCut already exists. Not redefined.
+Warning in <THaVarList::DefineByType>: Variable H.Empty.scalerRate already exists. Not redefined.
+Warning in <THaVarList::DefineByType>: Variable H.Empty_2.scaler already exists. Not redefined.
+Warning in <THaVarList::DefineByType>: Variable H.Empty_2.scalerCut already exists. Not redefined.
+Warning in <THaVarList::DefineByType>: Variable H.Empty_2.scalerRate already exists. Not redefined.
+Initializing HC
+Initializing epics
+Loading cuts from DEF-files/COIN/PRODUCTION/CUTS/coin_production_cuts.def
+Error in <THaCut::Compile>:  Bad numerical expression : "P.ngcer.npeSum"
+Error in <THaCutList::Define>: expression error, cut not created: pcut_cer_ng_elec P.ngcer.npeSum > 0.5 block: Reconstruct
+Error in <THaCut::Compile>:  Bad numerical expression : "P.ngcer.npeSum"
+Error in <THaCutList::Define>: expression error, cut not created: pcut_cer_ng_pi P.ngcer.npeSum <= 0.5 block: Reconstruct
+Error in <THaCut::Compile>:  Bad numerical expression : "pcut_cer_ng_pi"
+Error in <THaCutList::Define>: expression error, cut not created: pcut_cer_pi_both pcut_cer_ng_pi && pcut_cer_hg_pi block: Reconstruct
+Error in <THaCut::Compile>:  Bad numerical expression : "pcut_cer_ng_elec"
+Error in <THaCutList::Define>: expression error, cut not created: pcut_cer_elec_both pcut_cer_ng_elec && pcut_cer_hg_elec block: Reconstruct
+Error in <THaCut::Compile>:  Bad numerical expression : "pcut_cer_ng_elec"
+Error in <THaCutList::Define>: expression error, cut not created: pcut_elec_all pcut_cer_ng_elec && pcut_cer_hg_elec && pcut_cal_elec block: Reconstruct
+Error in <THaCut::Compile>:  Bad numerical expression : "pcut_cer_ng_pi"
+Error in <THaCutList::Define>: expression error, cut not created: pcut_pi_all pcut_cer_ng_pi && pcut_cer_hg_pi && pcut_cal_pi block: Reconstruct
+Warning in <THaCutList::Load>: 6 cut(s) could not be defined, check input file DEF-files/SHMS/PRODUCTION/CUTS/pstackana_reconstruct_cuts.def
+Error in <THaCut::Compile>:  Bad numerical expression : "pcut_cer_elec_both"
+Error in <THaCutList::Define>: expression error, cut not created: pcut_CleanTrack_cer_elec (P.gtr.index > -1) && pcut_cer_elec_both block: Physics
+Error in <THaCut::Compile>:  Bad numerical expression : "pcut_cer_elec_both"
+Error in <THaCutList::Define>: expression error, cut not created: pcut_p1hit1_cer_elec p1hit1 && pcut_cer_elec_both block: Physics
+Warning in <THaCutList::Load>: 2 cut(s) could not be defined, check input file DEF-files/SHMS/PRODUCTION/CUTS/pstackana_physics_cuts.def
+Initializing output
+Error in <THaVform::Compile>:  Bad numerical expression : "T.coin.hT3_tdcTime"
+Error in <THaFormula::Compile>:  Bad numerical expression : "T.coin.hT3_tdcTime"
+Error in <THaVform::Compile>:  Bad numerical expression : "P.ngcer.npeSum"
+Error in <THaFormula::Compile>:  Bad numerical expression : "P.ngcer.npeSum"
+Error in <THaVform::Compile>:  Bad numerical expression : "P.ngcer.npeSum"
+Error in <THaCut::Compile>:  Bad numerical expression : "P.ngcer.npeSum"
+
+THaOutput definitions: 
+=== Number of variables 608
+=== Number of formulas 9
+=== Number of histograms 502
+
+Error in <THaFormula::Compile>:  Bad numerical expression : "T.coin.hT3_tdcTime"
+Error in <THaFormula::Compile>:  Bad numerical expression : "P.ngcer.npeSum"
+Error in <THaCut::Compile>:  Bad numerical expression : "P.ngcer.npeSum"
+Decoder: helicity disabled
+
+Starting analysis
+Info in <THaCrateMap::init(tloc)>: Opened database file MAPS/db_cratemap.dat
+Banks found (event 1):
+ roc  bank     pos     len
+   1   250    3896     676
+   1  9250    4574     476
+   1  9001    5052      13
+   1  1190    5067      81
+   2   250    1559    1653
+   2  9250    3214     374
+   2  9001    3590      13
+   2  1190    3605     153
+   3  1190    3762     130
+   4   250     581     128
+   4  9250     711     544
+   4  9001    1257      13
+   5  3801    1274     231
+   5  9001    1507      13
+   5  9801    1522      33
+   6  1190     355     222
+   8  3801      37     264
+   8  9001     303      13
+   8  9801     318      33
+Sum                   5063
+Initializing
+Searching for first of a quartet at cycle  -1
+1 1 0 0
+Phase found from QRT signal
+fFirstcycle = 3
+Start calibrating at cycle 3
+Missing Ref times:                P.dc         0         0
+Missing Ref times:               P.hod         0         0
+Missing Ref times:             P.hgcer         0         0
+Missing Ref times:              P.aero         0         0
+Missing Ref times:               P.cal         0         0
+Missing Ref times:                H.dc         0         0
+Missing Ref times:               H.hod         0         0
+Missing Ref times:               H.cer         0         0
+Missing Ref times:               H.cal         0         0
+Missing Ref times:              T.coin         0         0
+------------- HELICITY DECODING ----------------------
+Actual helicity reversal frequency differs from "helicity_freq" value
+If there are helicity decoding errors beyond the start of the run, 
+try replacing helicity_freq value of 29.5596183 with 29.56030936
+If that still gives helicity errors, try 29.56030641
+------------------------------------------------------
+THcScalerEvtHandler::End Analyzing 0 delayed scaler events
+THcScalerEvtHandler::End Analyzing 0 delayed scaler events
+
+[INTERRUPT] Stopping background jobs...
